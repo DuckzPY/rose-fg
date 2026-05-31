@@ -1,4 +1,0 @@
-qrcode[pil]
-Pillow
-customtkinter
-whois

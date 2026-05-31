@@ -21,7 +21,7 @@ It is not intended for distribution. This is a private tool.
 ### 1. Clone or download the project
 
 ```
-git clone <your-repo-url>
+git clone https://github.com/DuckzPY/rose-fg/
 cd tool
 ```
 
@@ -54,6 +54,7 @@ For WHOIS lookups (if the system `whois` binary is unavailable):
 ```bash
 pip install python-whois
 ```
+Or run the requirements.bat file to install them automatically
 
 ### 4. Run
 

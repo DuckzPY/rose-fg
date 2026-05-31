@@ -54,24 +54,24 @@ SERVICES = {
 }
 
 C = {
-    "bg":        "#080b18",
-    "sidebar":   "#060810",
-    "card":      "#0d1222",
-    "card2":     "#111628",
-    "border":    "#1c2545",
-    "green":     "#ff3355",
-    "green_dim": "#cc2244",
-    "green_dark":"#330011",
-    "blue":      "#3a6fff",
-    "red":       "#ff5555",
-    "yellow":    "#ffcc44",
-    "cyan":      "#4f7fff",
-    "text":      "#c8d8e8",
-    "text_dim":  "#5a6a7a",
-    "text_muted":"#374455",
-    "accent":    "#ff3355",
+    "bg":        "#080008",
+    "sidebar":   "#060006",
+    "card":      "#0f000a",
+    "card2":     "#1a0010",
+    "border":    "#2a0015",
+    "green":     "#FF0054",   
+    "green_dim": "#cc0040",
+    "green_dark":"#1a0010",
+    "blue":      "#cc3366",
+    "red":       "#E24B4A",
+    "yellow":    "#EF9F27",
+    "cyan":      "#ff6688",
+    "text":      "#ffffff",   
+    "text_dim":  "#888888",   
+    "text_muted":"#444444",
+    "accent":    "#FF0054",
+    'Ready':     "#00FF54",
 }
-
 FONT_MONO   = "JetBrains Mono"
 FONT_UI     = "Inter"
 FONT_HEADER = "Inter"
@@ -212,7 +212,7 @@ clock_label.pack(side="right", padx=16, pady=4)
 update_clock()
 
 status_dot2 = ctk.CTkLabel(statusbar, text="● READY", font=ctk.CTkFont(family=FONT_MONO, size=10),
-                             text_color=C["green"])
+                             text_color=C["Ready"])
 status_dot2.pack(side="left", padx=16, pady=4)
 
 content = ctk.CTkFrame(content_outer, fg_color="transparent")

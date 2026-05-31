@@ -206,7 +206,7 @@ Persistent scratch pad. Auto-saves every 30 seconds to `~/.rose-fg_notes.txt`. M
 ## Usage Notes
 
 - **Sidebar navigation** — sections are collapsible. Click a section header to expand/collapse it. Active tools are highlighted in red.
-- **Output boxes** — all output is colour-coded: green = success, red = error, yellow = warning, cyan = info, dim = metadata.
+- **Output boxes** — all output is colour-coded: red = success, red = error, yellow = warning, cyan = info, dim = metadata.
 - **Threaded operations** — network tools run in background threads so the UI never freezes. Use the Stop button in Port Scanner to interrupt a long scan.
 - **Drag & drop** — File Hash and File Info support drag and drop if tkinterdnd2 is available; otherwise use the Browse button.
 - **Discord tools** — require a bot token with appropriate permissions. The bot must be in the server for most guild-level tools. DM Sender requires the bot to share a server with the target user.

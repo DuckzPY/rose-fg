@@ -54,27 +54,27 @@ SERVICES = {
 }
 
 C = {
-    "bg":        "#0d0f14",
-    "sidebar":   "#0a0c10",
-    "card":      "#13161e",
-    "card2":     "#181c26",
-    "border":    "#1e2535",
-    "green":     "#00ff88",
-    "green_dim": "#00c96a",
-    "green_dark":"#003322",
-    "blue":      "#4da6ff",
+    "bg":        "#080b18",
+    "sidebar":   "#060810",
+    "card":      "#0d1222",
+    "card2":     "#111628",
+    "border":    "#1c2545",
+    "green":     "#ff3355",
+    "green_dim": "#cc2244",
+    "green_dark":"#330011",
+    "blue":      "#3a6fff",
     "red":       "#ff5555",
     "yellow":    "#ffcc44",
-    "cyan":      "#00d4ff",
+    "cyan":      "#4f7fff",
     "text":      "#c8d8e8",
     "text_dim":  "#5a6a7a",
     "text_muted":"#374455",
-    "accent":    "#00ff88",
+    "accent":    "#ff3355",
 }
 
-FONT_MONO   = "Cascadia Code"
-FONT_UI     = "Segoe UI"
-FONT_HEADER = "Segoe UI"
+FONT_MONO   = "JetBrains Mono"
+FONT_UI     = "Inter"
+FONT_HEADER = "Inter"
 
 app = ctk.CTk()
 app.title("rose-fg  v6.0")
@@ -89,37 +89,47 @@ sidebar_outer = ctk.CTkFrame(app, width=230, corner_radius=0, fg_color=C["sideba
 sidebar_outer.pack(side="left", fill="y")
 sidebar_outer.pack_propagate(False)
 
-border_canvas = tk.Canvas(app, width=1, bg=C["green"], highlightthickness=0, bd=0)
-border_canvas.place(x=230, y=0, relheight=1.0)
-
 sidebar = ctk.CTkScrollableFrame(sidebar_outer, fg_color="transparent",
                                   scrollbar_button_color=C["text_muted"],
-                                  scrollbar_button_hover_color=C["green"])
+                                  scrollbar_button_hover_color=C["green_dim"])
 sidebar.pack(fill="both", expand=True, padx=0, pady=0)
 
 logo_frame = ctk.CTkFrame(sidebar, fg_color="transparent")
 logo_frame.pack(fill="x", pady=(20, 8), padx=16)
 
-dot_canvas = tk.Canvas(logo_frame, width=10, height=10, bg=C["sidebar"], highlightthickness=0)
-dot_canvas.pack(side="left", padx=(0, 8), pady=6)
-dot = dot_canvas.create_oval(1, 1, 9, 9, fill=C["green"], outline="")
-
-def pulse_dot(alpha=255, direction=-1):
-    colors = [int(0 * (alpha/255)), int(255 * (alpha/255)), int(136 * (alpha/255))]
-    hex_col = "#{:02x}{:02x}{:02x}".format(*colors)
-    dot_canvas.itemconfig(dot, fill=hex_col)
-    new_alpha = alpha + direction * 8
-    if new_alpha <= 60: direction = 1
-    if new_alpha >= 255: direction = -1
-    app.after(40, lambda: pulse_dot(new_alpha, direction))
-
-pulse_dot()
+# Rose logo image
+_logo_img_ref = [None]
+try:
+    _logo_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "rose_logo.png")
+    _logo_pil  = Image.open(_logo_path).resize((42, 42), Image.LANCZOS)
+    _logo_ctk  = ctk.CTkImage(light_image=_logo_pil, dark_image=_logo_pil, size=(42, 42))
+    _logo_img_ref[0] = _logo_ctk
+    logo_img_label = ctk.CTkLabel(logo_frame, image=_logo_ctk, text="")
+    logo_img_label.pack(side="left", padx=(0, 10), pady=4)
+except Exception:
+    # Fallback pulsing dot if image not found
+    dot_canvas = tk.Canvas(logo_frame, width=10, height=10, bg=C["sidebar"], highlightthickness=0)
+    dot_canvas.pack(side="left", padx=(0, 8), pady=6)
+    dot = dot_canvas.create_oval(1, 1, 9, 9, fill=C["green"], outline="")
+    def pulse_dot(alpha=255, direction=-1):
+        colors = [int(255*(alpha/255)), int(30*(alpha/255)), int(70*(alpha/255))]
+        hex_col = "#{:02x}{:02x}{:02x}".format(*colors)
+        try:
+            dot_canvas.itemconfig(dot, fill=hex_col)
+            new_alpha = alpha + direction * 8
+            if new_alpha <= 60: direction = 1
+            if new_alpha >= 255: direction = -1
+            app.after(40, lambda: pulse_dot(new_alpha, direction))
+        except Exception: pass
+    pulse_dot()
 
 logo_text = ctk.CTkFrame(logo_frame, fg_color="transparent")
 logo_text.pack(side="left")
-ctk.CTkLabel(logo_text, text="rose-fg", font=ctk.CTkFont(family=FONT_HEADER, size=15, weight="bold"),
+ctk.CTkLabel(logo_text, text="rose-fg",
+             font=ctk.CTkFont(family=FONT_HEADER, size=16, weight="bold"),
              text_color=C["green"]).pack(anchor="w")
-ctk.CTkLabel(logo_text, text="rose-fg  v6.0", font=ctk.CTkFont(family=FONT_HEADER, size=10),
+ctk.CTkLabel(logo_text, text="v6.0",
+             font=ctk.CTkFont(family=FONT_HEADER, size=10),
              text_color=C["text_dim"]).pack(anchor="w")
 
 def _divider(parent, color=C["border"], pady=6):
@@ -286,7 +296,7 @@ def lentry(parent, label, placeholder, show_char=""):
 
 def mk_btn(parent, text, command=None, width=120, danger=False, muted=False, **kw):
     fg = C["red"] if danger else (C["card2"] if muted else C["green_dark"])
-    hover = "#991111" if danger else (C["card"] if muted else "#004433")
+    hover = "#991111" if danger else (C["card"] if muted else "#550018")
     txt = "#ffffff" if danger else (C["text_dim"] if muted else C["green"])
     b = ctk.CTkButton(parent, text=text, command=command, width=width,
                       fg_color=fg, hover_color=hover, text_color=txt,
@@ -446,23 +456,19 @@ out_whois = outbox(f_whois)
 def do_whois():
     t = e_whois.get().strip(); clear(out_whois)
     write(out_whois, f"  Running WHOIS for {t}...\n", "dim")
-
     whois_available = False
     try:
         result = subprocess.run(["whois", "--version"], capture_output=True, timeout=3)
         whois_available = True
     except (FileNotFoundError, subprocess.TimeoutExpired):
         whois_available = False
-
     if whois_available:
         try:
             r = subprocess.run(["whois", t], capture_output=True, text=True, timeout=10)
             write(out_whois, r.stdout or "No output.")
             return
         except Exception as e:
-            write(out_whois, f"  whois command failed: {e}\n  Falling back to IANA WHOIS...\n", "yellow")
-
-    write(out_whois, "  whois not found on this system.\n  Attempting install via Python whois library...\n", "yellow")
+            write(out_whois, f"  whois command failed: {e}\n  Falling back...\n", "yellow")
     try:
         import whois as pywhois
         data = pywhois.whois(t)
@@ -479,7 +485,6 @@ def do_whois():
         pass
     except Exception as e:
         write(out_whois, f"  python-whois error: {e}\n", "red")
-
     write(out_whois, "  python-whois not installed. Attempting pip install...", "yellow")
     try:
         subprocess.run([sys.executable, "-m", "pip", "install", "python-whois", "--quiet"], timeout=30, check=True)
@@ -495,8 +500,7 @@ def do_whois():
         write(out_whois, f"  Status      :  {data.status}")
     except Exception as e:
         write(out_whois, f"  Auto-install failed: {e}", "red")
-        write(out_whois, "  You can manually install with:  pip install python-whois", "yellow")
-        write(out_whois, "  Or install the system whois tool via your package manager.", "dim")
+        write(out_whois, "  pip install python-whois", "yellow")
 
 btn_w.configure(command=lambda: threading.Thread(target=do_whois, daemon=True).start())
 
@@ -547,12 +551,10 @@ def do_ssl():
             s.connect((domain, 443))
             cert = s.getpeercert()
             protocol = s.version()
-
         subject  = dict(x[0] for x in cert.get("subject", []))
         issuer   = dict(x[0] for x in cert.get("issuer", []))
         not_before = cert.get("notBefore", "N/A")
         not_after  = cert.get("notAfter",  "N/A")
-
         try:
             exp_dt = datetime.datetime.strptime(not_after, "%b %d %H:%M:%S %Y %Z")
             days_left = (exp_dt - datetime.datetime.utcnow()).days
@@ -560,9 +562,7 @@ def do_ssl():
             expiry_str = f"{not_after}  ({days_left} days remaining)"
         except:
             days_left = -1; expiry_tag = "dim"; expiry_str = not_after
-
         sans = [v for t, v in cert.get("subjectAltName", []) if t == "DNS"]
-
         write(out_ssl, f"  Common Name   :  {subject.get('commonName', 'N/A')}")
         write(out_ssl, f"  Organisation  :  {subject.get('organizationName', 'N/A')}")
         write(out_ssl, f"  Issued By     :  {issuer.get('organizationName', 'N/A')}", "blue")
@@ -572,13 +572,10 @@ def do_ssl():
         write(out_ssl, f"  Serial No.    :  {cert.get('serialNumber', 'N/A')}", "dim")
         write(out_ssl, f"\n  Subject Alt Names ({len(sans)}):", "dim")
         if sans:
-            for san in sans[:12]:
-                write(out_ssl, f"    {san}", "green")
-            if len(sans) > 12:
-                write(out_ssl, f"    ... and {len(sans)-12} more", "dim")
+            for san in sans[:12]: write(out_ssl, f"    {san}", "green")
+            if len(sans) > 12: write(out_ssl, f"    ... and {len(sans)-12} more", "dim")
         else:
             write(out_ssl, "    None", "dim")
-
         if days_left < 0:
             write(out_ssl, "\n  Certificate has EXPIRED!", "red")
         elif days_left <= 7:
@@ -587,7 +584,6 @@ def do_ssl():
             write(out_ssl, f"\n  Certificate expiring soon ({days_left} days).", "yellow")
         else:
             write(out_ssl, f"\n  Certificate valid — {days_left} days remaining.", "green")
-
     except ssl.SSLCertVerificationError as e:
         write(out_ssl, f"  SSL Verification Failed: {e}", "red")
     except Exception as e:
@@ -632,10 +628,8 @@ btn_subnet.configure(command=lambda: threading.Thread(target=do_subnet, daemon=T
 
 f_ps = ctk.CTkFrame(content, fg_color="transparent")
 title(f_ps, "Port Scanner", "Scan any host for open TCP ports")
-
 ps_card = card(f_ps); ps_card.pack(fill="x")
 inner = ctk.CTkFrame(ps_card, fg_color="transparent"); inner.pack(fill="x", padx=14, pady=14)
-
 ctk.CTkLabel(inner, text="Target IP", anchor="w",
              font=ctk.CTkFont(family=FONT_UI, size=11), text_color=C["text_dim"]).pack(fill="x")
 ps_ip = ctk.CTkEntry(inner, placeholder_text="e.g.  192.168.1.1",
@@ -643,7 +637,6 @@ ps_ip = ctk.CTkEntry(inner, placeholder_text="e.g.  192.168.1.1",
                       placeholder_text_color=C["text_muted"],
                       font=ctk.CTkFont(family=FONT_MONO, size=11), corner_radius=6, border_width=1)
 ps_ip.pack(fill="x", pady=(2, 10))
-
 pr = ctk.CTkFrame(inner, fg_color="transparent"); pr.pack(fill="x")
 ctk.CTkLabel(pr, text="Port Range  —  tip: keep ranges small (e.g. 1–1024) for speed", anchor="w",
              font=ctk.CTkFont(family=FONT_UI, size=11), text_color=C["text_dim"]).pack(fill="x")
@@ -655,7 +648,6 @@ ctk.CTkLabel(pr2, text="  →  ", text_color=C["text_dim"]).pack(side="left")
 ps_e = ctk.CTkEntry(pr2, placeholder_text="End  e.g. 1024", fg_color=C["card2"], border_color=C["border"],
                      text_color=C["text"], font=ctk.CTkFont(family=FONT_MONO, size=11), corner_radius=6, border_width=1)
 ps_e.pack(side="left", expand=True, fill="x")
-
 ctk.CTkLabel(inner, text="Quick presets:", anchor="w",
              font=ctk.CTkFont(family=FONT_UI, size=10), text_color=C["text_muted"]).pack(fill="x", pady=(4,2))
 preset_row = ctk.CTkFrame(inner, fg_color="transparent")
@@ -678,23 +670,19 @@ ps_slider = ctk.CTkSlider(sr, from_=0.05, to=1.0, number_of_steps=19,
                            progress_color=C["green_dark"])
 ps_slider.set(0.5); ps_slider.pack(side="left", expand=True, fill="x", padx=8)
 ctk.CTkLabel(sr, text="Fast", font=ctk.CTkFont(size=10), text_color=C["text_muted"]).pack(side="left")
-
 ps_prog = ctk.CTkProgressBar(f_ps, progress_color=C["green"], fg_color=C["card"])
 ps_prog.pack(fill="x", pady=(10, 2)); ps_prog.set(0)
 ps_status = ctk.CTkLabel(f_ps, text="Ready to scan", text_color=C["text_dim"],
                           font=ctk.CTkFont(family=FONT_MONO, size=10)); ps_status.pack()
-
 out_ps = ctk.CTkTextbox(f_ps, height=180,
                           font=ctk.CTkFont(family=FONT_MONO, size=settings["font_size"]),
                           fg_color=C["card"], text_color=C["text"], corner_radius=8,
-                          border_width=1, border_color=C["border"],
-                          wrap="word")
+                          border_width=1, border_color=C["border"], wrap="word")
 out_ps.pack(fill="x", pady=(8, 8)); out_ps.configure(state="disabled")
-out_ps.tag_config("green",  foreground=C["green"])
-out_ps.tag_config("red",    foreground=C["red"])
-out_ps.tag_config("blue",   foreground=C["blue"])
-out_ps.tag_config("dim",    foreground=C["text_dim"])
-
+out_ps.tag_config("green", foreground=C["green"])
+out_ps.tag_config("red",   foreground=C["red"])
+out_ps.tag_config("blue",  foreground=C["blue"])
+out_ps.tag_config("dim",   foreground=C["text_dim"])
 ps_br = ctk.CTkFrame(f_ps, fg_color="transparent"); ps_br.pack()
 ps_scan_btn = mk_btn(ps_br, "▶  Start Scan", width=140); ps_scan_btn.pack(side="left", padx=4)
 ps_stop_btn = mk_btn(ps_br, "■  Stop", width=90, danger=True); ps_stop_btn.pack(side="left", padx=4)
@@ -707,11 +695,8 @@ def do_ps():
     try:
         start = int(ps_s.get() or 1); end = int(ps_e.get() or 1024)
     except: start, end = 1, 1024
-
     if end - start > 9999:
         write(out_ps, f"  Range {start}-{end} is {end-start+1} ports — this may take a while.", "yellow")
-        write(out_ps, "  Consider using a preset like 'Top 20' (1-1024) for faster results.\n", "dim")
-
     timeout = round(1.05 - ps_slider.get(), 2); found = 0
     out_ps.configure(state="normal"); out_ps.delete("1.0", "end"); out_ps.configure(state="disabled")
     write(out_ps, f"  Scanning {ip}  [{start}-{end}]  timeout={timeout}s\n", "dim")
@@ -777,43 +762,36 @@ def do_trace(t, o):
                 except FileNotFoundError:
                     continue
             else:
-                write(o, "  No traceroute tool found.", "red")
-                write(o, "  Install with:  sudo apt install traceroute  or  sudo apt install mtr", "yellow")
-                return
+                write(o, "  No traceroute tool found.", "red"); return
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
         output = result.stdout or result.stderr
-        if output.strip():
-            write(o, output)
-        else:
-            write(o, "  No output returned. The host may be blocking ICMP.", "yellow")
+        if output.strip(): write(o, output)
+        else: write(o, "  No output returned.", "yellow")
     except subprocess.TimeoutExpired:
-        write(o, "  Traceroute timed out after 60 seconds.", "yellow")
+        write(o, "  Traceroute timed out.", "yellow")
     except Exception as e:
         write(o, f"  Error: {e}", "red")
 
 def do_dns(t, o):
     clear(o)
-    if not t:
-        write(o, "  Enter a domain name.", "yellow"); return
+    if not t: write(o, "  Enter a domain name.", "yellow"); return
     try:
         results = socket.getaddrinfo(t, None)
         ips = list(dict.fromkeys(r[4][0] for r in results))
         write(o, f"  Domain  :  {t}", "cyan")
-        for ip in ips:
-            write(o, f"  IP      :  {ip}", "green")
+        for ip in ips: write(o, f"  IP      :  {ip}", "green")
         try:
             hostname = socket.gethostbyaddr(ips[0])[0]
             write(o, f"  Reverse :  {hostname}", "dim")
-        except:
-            pass
+        except: pass
     except socket.gaierror as e:
         write(o, f"  DNS resolution failed: {e}", "red")
     except Exception as e:
         write(o, f"  Error: {e}", "red")
 
-f_ping  = make_net_tool("Ping",       "Send ICMP packets to test connectivity",     "IP or domain",   "Ping",  do_ping)
-f_trace = make_net_tool("Traceroute", "Trace the route packets take to a host",     "IP or domain",   "Trace", do_trace)
-f_dns   = make_net_tool("DNS Lookup", "Resolve a domain to its IP address",         "Domain",         "Lookup",do_dns)
+f_ping  = make_net_tool("Ping",       "Send ICMP packets to test connectivity",  "IP or domain", "Ping",  do_ping)
+f_trace = make_net_tool("Traceroute", "Trace the route packets take to a host",  "IP or domain", "Trace", do_trace)
+f_dns   = make_net_tool("DNS Lookup", "Resolve a domain to its IP address",       "Domain",       "Lookup",do_dns)
 
 f_myip = ctk.CTkFrame(content, fg_color="transparent")
 title(f_myip, "My Public IP", "Fetch your external IP and geolocation")
@@ -881,10 +859,10 @@ f_disc_embed = ctk.CTkFrame(content, fg_color="transparent")
 title(f_disc_embed, "Embed Sender", "Send a rich embed message via your bot")
 dt2 = disc_field(f_disc_embed, "Bot Token", "Bot token", True)
 dc2 = disc_field(f_disc_embed, "Channel ID", "Channel ID")
-de_title   = disc_field(f_disc_embed, "Embed Title", "Title")
-de_desc    = disc_field(f_disc_embed, "Description", "Description")
-de_color   = disc_field(f_disc_embed, "Colour (hex)", "5865f2")
-de_footer  = disc_field(f_disc_embed, "Footer text (optional)", "Footer")
+de_title  = disc_field(f_disc_embed, "Embed Title", "Title")
+de_desc   = disc_field(f_disc_embed, "Description", "Description")
+de_color  = disc_field(f_disc_embed, "Colour (hex)", "5865f2")
+de_footer = disc_field(f_disc_embed, "Footer text (optional)", "Footer")
 mk_btn(f_disc_embed, "  Send Embed", width=140,
        command=lambda: threading.Thread(target=do_embed, daemon=True).start()).pack(anchor="w")
 out_embed = outbox(f_disc_embed, height=100)
@@ -904,9 +882,9 @@ def do_embed():
 
 f_disc_webhook = ctk.CTkFrame(content, fg_color="transparent")
 title(f_disc_webhook, "Webhook Sender", "Send messages via a webhook URL")
-dw_url  = disc_field(f_disc_webhook, "Webhook URL",            "https://discord.com/api/webhooks/...")
+dw_url  = disc_field(f_disc_webhook, "Webhook URL",             "https://discord.com/api/webhooks/...")
 dw_name = disc_field(f_disc_webhook, "Display Name (optional)", "Custom name")
-dw_msg  = disc_field(f_disc_webhook, "Message",                 "Your message")
+dw_msg  = disc_field(f_disc_webhook, "Message",                  "Your message")
 mk_btn(f_disc_webhook, "  Send Webhook", width=150,
        command=lambda: threading.Thread(target=do_webhook, daemon=True).start()).pack(anchor="w")
 out_wh = outbox(f_disc_webhook, height=140)
@@ -1010,7 +988,7 @@ def do_delete():
 
 f_disc_server = ctk.CTkFrame(content, fg_color="transparent")
 title(f_disc_server, "Server Info", "Get detailed information about a Discord server")
-dt_sv = disc_field(f_disc_server, "Bot Token",  "Bot token", True)
+dt_sv = disc_field(f_disc_server, "Bot Token",         "Bot token", True)
 dc_sv = disc_field(f_disc_server, "Server (Guild) ID", "Server ID")
 mk_btn(f_disc_server, "  Get Server Info", width=160,
        command=lambda: threading.Thread(target=do_server_info, daemon=True).start()).pack(anchor="w")
@@ -1037,13 +1015,12 @@ def do_server_info():
         features = d.get('features', [])
         if features:
             write(out_sv, f"\n  Features:", "dim")
-            for feat in features:
-                write(out_sv, f"    {feat}", "blue")
+            for feat in features: write(out_sv, f"    {feat}", "blue")
     except Exception as e: write(out_sv, f"  Error: {e}", "red")
 
 f_disc_roles = ctk.CTkFrame(content, fg_color="transparent")
 title(f_disc_roles, "Role Lister", "List all roles in a Discord server with permissions")
-dt_rl = disc_field(f_disc_roles, "Bot Token", "Bot token", True)
+dt_rl = disc_field(f_disc_roles, "Bot Token",         "Bot token", True)
 dc_rl = disc_field(f_disc_roles, "Server (Guild) ID", "Server ID")
 mk_btn(f_disc_roles, "  List Roles", width=140,
        command=lambda: threading.Thread(target=do_role_list, daemon=True).start()).pack(anchor="w")
@@ -1058,17 +1035,17 @@ def do_role_list():
         roles = sorted(roles, key=lambda r: -r.get("position", 0))
         write(out_rl, f"  Found {len(roles)} roles:\n", "dim")
         for i, role in enumerate(roles, 1):
-            name  = role.get("name", "N/A")
-            rid   = role.get("id", "N/A")
-            color = f"#{role.get('color', 0):06x}" if role.get("color") else "none"
+            name    = role.get("name", "N/A")
+            rid     = role.get("id", "N/A")
+            color   = f"#{role.get('color', 0):06x}" if role.get("color") else "none"
             managed = "  [bot]" if role.get("managed") else ""
             write(out_rl, f"  {i:<4}  {name:<28}  {rid:<20}  {color}{managed}", "green" if role.get("color") else "")
     except Exception as e: write(out_rl, f"  Error: {e}", "red")
 
 f_disc_fetch = ctk.CTkFrame(content, fg_color="transparent")
 title(f_disc_fetch, "Message Fetcher", "Fetch recent messages from a channel")
-dt_mf = disc_field(f_disc_fetch, "Bot Token",  "Bot token", True)
-dc_mf = disc_field(f_disc_fetch, "Channel ID", "Channel ID")
+dt_mf = disc_field(f_disc_fetch, "Bot Token",       "Bot token", True)
+dc_mf = disc_field(f_disc_fetch, "Channel ID",      "Channel ID")
 dl_mf = disc_field(f_disc_fetch, "Limit (max 100)", "20")
 mk_btn(f_disc_fetch, "  Fetch Messages", width=160,
        command=lambda: threading.Thread(target=do_fetch_msgs, daemon=True).start()).pack(anchor="w")
@@ -1092,8 +1069,8 @@ def do_fetch_msgs():
 
 f_disc_builder = ctk.CTkFrame(content, fg_color="transparent")
 title(f_disc_builder, "Bot Builder", "Generate a ready-to-run Discord bot script")
-db_name   = disc_field(f_disc_builder, "Bot Name",         "MyBot")
-db_prefix = disc_field(f_disc_builder, "Command Prefix",   "!")
+db_name   = disc_field(f_disc_builder, "Bot Name",       "MyBot")
+db_prefix = disc_field(f_disc_builder, "Command Prefix", "!")
 r_db = irow(f_disc_builder)
 mk_btn(r_db, "  Generate Code", width=150, command=lambda: do_builder()).pack(side="left")
 mk_btn(r_db, "Copy", width=90, muted=True,
@@ -1123,14 +1100,6 @@ async def ping(ctx):
 @bot.command()
 async def say(ctx, *, message):
     await ctx.send(message)
-
-@bot.command()
-async def userinfo(ctx, member: discord.Member = None):
-    member = member or ctx.author
-    embed = discord.Embed(title=f"User Info — {{member}}", color=0x5865f2)
-    embed.add_field(name="ID", value=member.id)
-    embed.add_field(name="Joined", value=member.joined_at.strftime("%Y-%m-%d"))
-    await ctx.send(embed=embed)
 
 bot.run("YOUR_TOKEN_HERE")
 '''
@@ -1252,8 +1221,8 @@ f_hex_enc = ctk.CTkFrame(content, fg_color="transparent")
 title(f_hex_enc, "Hex Converter", "Convert text to hexadecimal and back")
 hex_in = lentry(f_hex_enc, "Input", "Text or hex string")
 r_hex = irow(f_hex_enc)
-mk_btn(r_hex, "  → Hex",      width=110, command=lambda: do_hex(True)).pack(side="left")
-mk_btn(r_hex, "  From Hex",   width=110, command=lambda: do_hex(False)).pack(side="left", padx=(8,0))
+mk_btn(r_hex, "  → Hex",    width=110, command=lambda: do_hex(True)).pack(side="left")
+mk_btn(r_hex, "  From Hex", width=110, command=lambda: do_hex(False)).pack(side="left", padx=(8,0))
 out_hex = outbox(f_hex_enc, height=220)
 
 def do_hex(to_hex):
@@ -1272,9 +1241,9 @@ caesar_in = ctk.CTkTextbox(f_caesar, height=90, fg_color=C["card"], border_width
 caesar_in.pack(fill="x", pady=(2, 8))
 caesar_shift = lentry(f_caesar, "Shift amount (1–25, ignored for ROT13)", "13")
 r_caesar = irow(f_caesar)
-mk_btn(r_caesar, "  Encode",  width=110, command=lambda: do_caesar(1)).pack(side="left")
-mk_btn(r_caesar, "  Decode",  width=110, command=lambda: do_caesar(-1)).pack(side="left", padx=(8,0))
-mk_btn(r_caesar, "  ROT13",   width=100, command=lambda: do_rot13()).pack(side="left", padx=(8,0))
+mk_btn(r_caesar, "  Encode", width=110, command=lambda: do_caesar(1)).pack(side="left")
+mk_btn(r_caesar, "  Decode", width=110, command=lambda: do_caesar(-1)).pack(side="left", padx=(8,0))
+mk_btn(r_caesar, "  ROT13",  width=100, command=lambda: do_rot13()).pack(side="left", padx=(8,0))
 out_caesar = outbox(f_caesar, height=180)
 
 def do_caesar(direction):
@@ -1322,14 +1291,11 @@ def do_jwt():
         def b64_decode_part(p):
             p += "=" * (-len(p) % 4)
             return json.loads(base64.urlsafe_b64decode(p).decode())
-
         header  = b64_decode_part(parts[0])
         payload = b64_decode_part(parts[1])
-
         write(out_jwt, "  HEADER", "dim")
         for k, v in header.items():
             write(out_jwt, f"  {k:<16} :  {v}", "cyan")
-
         write(out_jwt, "\n  PAYLOAD", "dim")
         for k, v in payload.items():
             tag = ""
@@ -1341,9 +1307,7 @@ def do_jwt():
                         tag = "red" if dt < datetime.datetime.utcnow() else "green"
                 except: pass
             write(out_jwt, f"  {k:<16} :  {v}", tag or "")
-
         write(out_jwt, "\n  SIGNATURE  (not verified — decode only)", "yellow")
-
         if "exp" in payload:
             exp_dt = datetime.datetime.utcfromtimestamp(int(payload["exp"]))
             if exp_dt < datetime.datetime.utcnow():
@@ -1351,7 +1315,6 @@ def do_jwt():
             else:
                 diff = exp_dt - datetime.datetime.utcnow()
                 write(out_jwt, f"\n  Token valid for ~{diff.seconds // 60} minutes.", "green")
-
     except Exception as e: write(out_jwt, f"  Error: {e}", "red")
 
 MORSE = {
@@ -1380,17 +1343,16 @@ def do_morse(to_morse):
     text = morse_in.get("1.0","end").strip(); clear(out_morse)
     try:
         if to_morse:
-            result = "  ".join(MORSE.get(c.upper(), "?") if c != " " else "/"
-                               for c in text)
+            result = "  ".join(MORSE.get(c.upper(), "?") if c != " " else "/" for c in text)
         else:
-            result = "".join(MORSE_REV.get(code, "?") if code != "/" else " "
-                             for code in text.split("  "))
+            result = "".join(MORSE_REV.get(code, "?") if code != "/" else " " for code in text.split("  "))
         write(out_morse, result, "green")
     except Exception as e: write(out_morse, f"  Error: {e}", "red")
 
 f_sysinfo = ctk.CTkFrame(content, fg_color="transparent")
 title(f_sysinfo, "System Info", "OS, hardware, and network overview")
-mk_btn(f_sysinfo, "  Collect Info", width=150, command=lambda: threading.Thread(target=do_sysinfo, daemon=True).start()).pack(anchor="w")
+mk_btn(f_sysinfo, "  Collect Info", width=150,
+       command=lambda: threading.Thread(target=do_sysinfo, daemon=True).start()).pack(anchor="w")
 out_sys = outbox(f_sysinfo)
 
 def do_sysinfo():
@@ -1402,7 +1364,6 @@ def do_sysinfo():
     write(out_sys, f"  Processor     :  {platform.processor()}")
     write(out_sys, f"  Architecture  :  {' / '.join(platform.architecture())}")
     write(out_sys, f"  Node Name     :  {platform.node()}")
-
     write(out_sys, "\n  NETWORK", "dim")
     hostname = socket.gethostname()
     write(out_sys, f"  Hostname      :  {hostname}")
@@ -1411,25 +1372,15 @@ def do_sysinfo():
         write(out_sys, f"  Local IP      :  {local_ip}")
     except:
         write(out_sys, f"  Local IP      :  unavailable", "dim")
-    try:
-        addrs = socket.getaddrinfo(hostname, None)
-        ipv6s = list(dict.fromkeys(a[4][0] for a in addrs if ':' in a[4][0]))
-        if ipv6s:
-            write(out_sys, f"  IPv6          :  {ipv6s[0]}")
-    except:
-        pass
-
     write(out_sys, "\n  RUNTIME", "dim")
     write(out_sys, f"  Python        :  {sys.version.split()[0]}")
     write(out_sys, f"  Executable    :  {sys.executable}")
     write(out_sys, f"  Platform Tag  :  {sys.platform}")
-
     write(out_sys, "\n  ENVIRONMENT", "dim")
     write(out_sys, f"  User          :  {os.environ.get('USERNAME') or os.environ.get('USER', 'N/A')}")
     write(out_sys, f"  Home Dir      :  {os.path.expanduser('~')}")
     write(out_sys, f"  CWD           :  {os.getcwd()}")
     write(out_sys, f"  PID           :  {os.getpid()}")
-
     try:
         import psutil
         write(out_sys, "\n  HARDWARE  (psutil)", "dim")
@@ -1439,8 +1390,6 @@ def do_sysinfo():
         write(out_sys, f"  RAM Total     :  {mem.total // (1024**3)} GB")
         write(out_sys, f"  RAM Used      :  {mem.used // (1024**3)} GB  ({mem.percent}%)")
         write(out_sys, f"  RAM Free      :  {mem.available // (1024**3)} GB")
-        boot_ts = datetime.datetime.fromtimestamp(psutil.boot_time())
-        write(out_sys, f"  Boot Time     :  {boot_ts.strftime('%Y-%m-%d %H:%M:%S')}")
     except ImportError:
         write(out_sys, "\n  Install psutil for CPU/RAM info:  pip install psutil", "dim")
 
@@ -1468,14 +1417,12 @@ def do_disk():
     clear(out_disk)
     try:
         import shutil
-        import os
         if sys.platform == "win32":
             import ctypes
             drives = []
             bitmask = ctypes.windll.kernel32.GetLogicalDrives()
             for letter in string.ascii_uppercase:
-                if bitmask & 1:
-                    drives.append(f"{letter}:\\")
+                if bitmask & 1: drives.append(f"{letter}:\\")
                 bitmask >>= 1
             write(out_disk, f"  {'Drive':<8}  {'Total':>10}  {'Used':>10}  {'Free':>10}  {'Use%':>6}", "dim")
             write(out_disk, "  " + "─" * 50, "dim")
@@ -1484,37 +1431,21 @@ def do_disk():
                     total, used, free = shutil.disk_usage(drive)
                     pct = round(used / total * 100)
                     tag = "red" if pct > 90 else ("yellow" if pct > 75 else "green")
-                    write(out_disk,
-                          f"  {drive:<8}  {total//1073741824:>8} GB  {used//1073741824:>8} GB  {free//1073741824:>8} GB  {pct:>5}%",
-                          tag)
+                    write(out_disk, f"  {drive:<8}  {total//1073741824:>8} GB  {used//1073741824:>8} GB  {free//1073741824:>8} GB  {pct:>5}%", tag)
                 except PermissionError:
                     write(out_disk, f"  {drive:<8}  (no access)", "dim")
         else:
             paths = ["/"]
-            try:
-                with open("/proc/mounts") as mf:
-                    for line in mf:
-                        parts = line.split()
-                        if len(parts) >= 2 and parts[1] not in paths:
-                            if parts[1].startswith("/") and "tmpfs" not in parts[2] and "proc" not in parts[2]:
-                                paths.append(parts[1])
-            except:
-                pass
-
             write(out_disk, f"  {'Mount':<20}  {'Total':>10}  {'Used':>10}  {'Free':>10}  {'Use%':>6}", "dim")
             write(out_disk, "  " + "─" * 64, "dim")
             for path in paths:
                 try:
                     total, used, free = shutil.disk_usage(path)
-                    if total == 0:
-                        continue
+                    if total == 0: continue
                     pct = round(used / total * 100)
                     tag = "red" if pct > 90 else ("yellow" if pct > 75 else "green")
-                    write(out_disk,
-                          f"  {path:<20}  {total//1073741824:>8} GB  {used//1073741824:>8} GB  {free//1073741824:>8} GB  {pct:>5}%",
-                          tag)
-                except Exception:
-                    pass
+                    write(out_disk, f"  {path:<20}  {total//1073741824:>8} GB  {used//1073741824:>8} GB  {free//1073741824:>8} GB  {pct:>5}%", tag)
+                except Exception: pass
     except Exception as e:
         write(out_disk, f"  Error: {e}", "red")
 
@@ -1606,12 +1537,9 @@ def do_filehash():
     raw_path = fh_path.get().strip()
     path = raw_path.strip('"').strip("'")
     clear(out_fh)
-    if not path:
-        write(out_fh, "  Enter or browse to a file path.", "yellow"); return
-    if not os.path.exists(path):
-        write(out_fh, f"  File not found: {path}", "red"); return
-    if os.path.isdir(path):
-        write(out_fh, "  Path is a directory, not a file.", "yellow"); return
+    if not path: write(out_fh, "  Enter or browse to a file path.", "yellow"); return
+    if not os.path.exists(path): write(out_fh, f"  File not found: {path}", "red"); return
+    if os.path.isdir(path): write(out_fh, "  Path is a directory.", "yellow"); return
     try:
         with open(path, "rb") as f: data = f.read()
         write(out_fh, f"  File    :  {os.path.basename(path)}")
@@ -1631,10 +1559,8 @@ def do_fileinfo():
     raw_path = fi_path.get().strip()
     path = raw_path.strip('"').strip("'")
     clear(out_fi)
-    if not path:
-        write(out_fi, "  Enter or browse to a file path.", "yellow"); return
-    if not os.path.exists(path):
-        write(out_fi, f"  Path not found: {path}", "red"); return
+    if not path: write(out_fi, "  Enter or browse to a file path.", "yellow"); return
+    if not os.path.exists(path): write(out_fi, f"  Path not found: {path}", "red"); return
     try:
         stat = os.stat(path)
         write(out_fi, f"  Name       :  {os.path.basename(path)}", "green")
@@ -1651,10 +1577,8 @@ def do_fileinfo():
 
 f_crypto = ctk.CTkFrame(content, fg_color="transparent")
 title(f_crypto, "Crypto Prices", "Live cryptocurrency prices via CoinGecko")
-
 crypto_top_row = ctk.CTkFrame(f_crypto, fg_color="transparent")
 crypto_top_row.pack(fill="x", pady=(0, 8))
-
 crypto_search_var = ctk.StringVar()
 crypto_search = ctk.CTkEntry(crypto_top_row, placeholder_text="Search coin  e.g. bitcoin, solana...",
                               textvariable=crypto_search_var,
@@ -1667,7 +1591,6 @@ mk_btn(crypto_top_row, "  Search", width=100,
 mk_btn(crypto_top_row, "  Fetch All", width=110,
        command=lambda: threading.Thread(target=do_crypto, daemon=True).start()).pack(side="left", padx=(8,0))
 out_crypto = outbox(f_crypto)
-
 DEFAULT_COINS = ["bitcoin","ethereum","solana","dogecoin","cardano","ripple","litecoin","polkadot","monero"]
 
 def do_crypto():
@@ -1675,8 +1598,7 @@ def do_crypto():
     try:
         ids  = ",".join(DEFAULT_COINS)
         data = json.loads(urllib.request.urlopen(
-            f"https://api.coingecko.com/api/v3/simple/price?ids={ids}&vs_currencies=usd,gbp",
-            timeout=8).read())
+            f"https://api.coingecko.com/api/v3/simple/price?ids={ids}&vs_currencies=usd,gbp", timeout=8).read())
         clear(out_crypto)
         write(out_crypto, f"  {'Coin':<16}  {'USD':>12}  {'GBP':>12}", "dim")
         write(out_crypto, "  " + "─" * 46, "dim")
@@ -1696,13 +1618,10 @@ def do_crypto_search():
         search_data = json.loads(urllib.request.urlopen(
             f"https://api.coingecko.com/api/v3/search?query={query}", timeout=8).read())
         coins_found = search_data.get("coins", [])
-        if not coins_found:
-            write(out_crypto, "  No coins found.", "red"); return
+        if not coins_found: write(out_crypto, "  No coins found.", "red"); return
         coin_ids = [c["id"] for c in coins_found[:6]]
-        ids = ",".join(coin_ids)
         data = json.loads(urllib.request.urlopen(
-            f"https://api.coingecko.com/api/v3/simple/price?ids={ids}&vs_currencies=usd,gbp",
-            timeout=8).read())
+            f"https://api.coingecko.com/api/v3/simple/price?ids={','.join(coin_ids)}&vs_currencies=usd,gbp", timeout=8).read())
         write(out_crypto, f"  {'Coin':<28}  {'USD':>12}  {'GBP':>12}", "dim")
         write(out_crypto, "  " + "─" * 58, "dim")
         for c in coins_found[:6]:
@@ -1716,9 +1635,9 @@ def do_crypto_search():
 
 f_convert = ctk.CTkFrame(content, fg_color="transparent")
 title(f_convert, "Currency Converter", "Real-time exchange rates")
-conv_amount = lentry(f_convert, "Amount",            "100")
-conv_from   = lentry(f_convert, "From (e.g. USD)",   "USD")
-conv_to     = lentry(f_convert, "To (e.g. GBP)",     "GBP")
+conv_amount = lentry(f_convert, "Amount",          "100")
+conv_from   = lentry(f_convert, "From (e.g. USD)", "USD")
+conv_to     = lentry(f_convert, "To (e.g. GBP)",   "GBP")
 mk_btn(f_convert, "  Convert", width=130,
        command=lambda: threading.Thread(target=do_convert, daemon=True).start()).pack(anchor="w")
 out_conv = outbox(f_convert, height=200)
@@ -1748,16 +1667,14 @@ text_in = ctk.CTkTextbox(f_texttools, height=100, fg_color=C["card"], border_wid
                            border_color=C["border"], text_color=C["text"],
                            font=ctk.CTkFont(family=FONT_MONO, size=11), corner_radius=8)
 text_in.pack(fill="x", pady=(2, 8))
-
 btn_row = irow(f_texttools)
 for lbl, fn in [("UPPER", str.upper), ("lower", str.lower), ("Title", str.title),
                 ("Reverse", lambda t: t[::-1])]:
     mk_btn(btn_row, lbl, width=90, command=lambda f=fn: do_text(f)).pack(side="left", padx=2)
-
 btn_row2 = irow(f_texttools)
-mk_btn(btn_row2, "Word Count",    width=110, command=lambda: do_wordcount()).pack(side="left", padx=2)
-mk_btn(btn_row2, "No Spaces",     width=100, command=lambda: do_text(lambda t: t.replace(" ",""))).pack(side="left", padx=2)
-mk_btn(btn_row2, "Strip Lines",   width=100, command=lambda: do_text(lambda t: "\n".join(l.strip() for l in t.splitlines()))).pack(side="left", padx=2)
+mk_btn(btn_row2, "Word Count",  width=110, command=lambda: do_wordcount()).pack(side="left", padx=2)
+mk_btn(btn_row2, "No Spaces",   width=100, command=lambda: do_text(lambda t: t.replace(" ",""))).pack(side="left", padx=2)
+mk_btn(btn_row2, "Strip Lines", width=100, command=lambda: do_text(lambda t: "\n".join(l.strip() for l in t.splitlines()))).pack(side="left", padx=2)
 out_text = outbox(f_texttools, height=180)
 
 def do_text(fn):
@@ -1772,32 +1689,25 @@ def do_wordcount():
 f_qr = ctk.CTkFrame(content, fg_color="transparent")
 title(f_qr, "QR Code Generator", "Generate a QR code for any text or URL")
 qr_in = lentry(f_qr, "Text or URL", "https://example.com")
-
 qr_display_frame = ctk.CTkFrame(f_qr, fg_color=C["card"], corner_radius=8,
                                   border_width=1, border_color=C["border"])
 qr_display_frame.pack(fill="x", pady=(0, 8))
-
 qr_image_label = ctk.CTkLabel(qr_display_frame, text="QR code will appear here",
                                 text_color=C["text_muted"],
                                 font=ctk.CTkFont(family=FONT_UI, size=11))
 qr_image_label.pack(pady=12)
-
 qr_img_ref = [None]
 
 def do_qr():
     import urllib.parse
     t = qr_in.get().strip()
-    if not t:
-        return
+    if not t: return
     clear(out_qr)
-
     try:
-        qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_L,
-                            box_size=6, border=3)
+        qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_L, box_size=6, border=3)
         qr.add_data(t)
         qr.make(fit=True)
         img = qr.make_image(fill_color="black", back_color="white")
-
         buf = BytesIO()
         img.save(buf, format="PNG")
         buf.seek(0)
@@ -1808,7 +1718,6 @@ def do_qr():
         write(out_qr, "  QR code generated above.", "green")
     except Exception as gen_err:
         write(out_qr, f"  Inline QR failed ({gen_err}) — falling back to URL.\n", "dim")
-
     encoded = urllib.parse.quote(t)
     url = f"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={encoded}"
     write(out_qr, f"  Link: {url}", "cyan")
@@ -1817,17 +1726,13 @@ def do_qr():
 
 r_qr = irow(f_qr)
 mk_btn(r_qr, "  Generate QR", width=150, command=lambda: do_qr()).pack(side="left")
-mk_btn(r_qr, "Copy URL", width=100, muted=True,
-       command=lambda: [do_qr()]).pack(side="left", padx=(8,0))
+mk_btn(r_qr, "Copy URL", width=100, muted=True, command=lambda: [do_qr()]).pack(side="left", padx=(8,0))
 out_qr = outbox(f_qr, height=100)
 
 f_notes = ctk.CTkFrame(content, fg_color="transparent")
 title(f_notes, "Notes", "Scratch pad — auto-saves every 30 seconds")
-
-notes_box = ctk.CTkTextbox(f_notes,
-                             fg_color=C["card"], border_width=1, border_color=C["border"],
-                             text_color=C["text"], font=ctk.CTkFont(family=FONT_MONO, size=12),
-                             corner_radius=8)
+notes_box = ctk.CTkTextbox(f_notes, fg_color=C["card"], border_width=1, border_color=C["border"],
+                             text_color=C["text"], font=ctk.CTkFont(family=FONT_MONO, size=12), corner_radius=8)
 notes_box.pack(fill="both", expand=True)
 try:
     with open(NOTES_FILE) as nf: notes_box.insert("1.0", nf.read())
@@ -1859,8 +1764,7 @@ out_soc = outbox(f_social_ip)
 def do_social_ip():
     raw = soc_entry.get().strip()
     t = raw.replace("https://","").replace("http://","").split("/")[0].strip()
-    if not t:
-        write(out_soc, "  Enter a domain.", "yellow"); return
+    if not t: write(out_soc, "  Enter a domain.", "yellow"); return
     clear(out_soc)
     write(out_soc, f"  Resolving {t}...\n", "dim")
     try:
@@ -1877,8 +1781,7 @@ def do_social_ip():
                     write(out_soc, f"  City     :  {d['city']}")
                     write(out_soc, f"  ISP      :  {d['isp']}")
                     write(out_soc, f"  Org      :  {d['org']}\n")
-            except:
-                pass
+            except: pass
     except socket.gaierror as e:
         write(out_soc, f"  DNS resolution failed: {e}", "red")
     except Exception as e:
@@ -1942,10 +1845,7 @@ def do_json(pretty):
     raw = json_in.get("1.0","end").strip(); clear(out_json)
     try:
         parsed = json.loads(raw)
-        if pretty:
-            result = json.dumps(parsed, indent=4, ensure_ascii=False)
-        else:
-            result = json.dumps(parsed, separators=(',',':'), ensure_ascii=False)
+        result = json.dumps(parsed, indent=4, ensure_ascii=False) if pretty else json.dumps(parsed, separators=(',',':'), ensure_ascii=False)
         write(out_json, result, "green")
         write(out_json, f"\n  Valid JSON  —  {len(result)} chars", "dim")
     except json.JSONDecodeError as e:
@@ -1995,21 +1895,18 @@ diff_left_f  = ctk.CTkFrame(diff_frames, fg_color="transparent")
 diff_left_f.pack(side="left", expand=True, fill="both", padx=(0,4))
 diff_right_f = ctk.CTkFrame(diff_frames, fg_color="transparent")
 diff_right_f.pack(side="left", expand=True, fill="both", padx=(4,0))
-
 ctk.CTkLabel(diff_left_f, text="Text A:", anchor="w",
              font=ctk.CTkFont(family=FONT_UI, size=11), text_color=C["text_dim"]).pack(fill="x")
 diff_a = ctk.CTkTextbox(diff_left_f, height=140, fg_color=C["card"], border_width=1,
                          border_color=C["border"], text_color=C["text"],
                          font=ctk.CTkFont(family=FONT_MONO, size=11), corner_radius=8)
 diff_a.pack(fill="both", expand=True, pady=(2,0))
-
 ctk.CTkLabel(diff_right_f, text="Text B:", anchor="w",
              font=ctk.CTkFont(family=FONT_UI, size=11), text_color=C["text_dim"]).pack(fill="x")
 diff_b = ctk.CTkTextbox(diff_right_f, height=140, fg_color=C["card"], border_width=1,
                          border_color=C["border"], text_color=C["text"],
                          font=ctk.CTkFont(family=FONT_MONO, size=11), corner_radius=8)
 diff_b.pack(fill="both", expand=True, pady=(2,0))
-
 mk_btn(f_diff, "  Compare", width=130, command=lambda: do_diff()).pack(anchor="w", pady=(8,0))
 out_diff = outbox(f_diff, height=180)
 
@@ -2021,16 +1918,11 @@ def do_diff():
     if not diff:
         write(out_diff, "  Texts are identical.", "green"); return
     for line in diff:
-        if line.startswith("---") or line.startswith("+++"):
-            write(out_diff, line.rstrip(), "cyan")
-        elif line.startswith("+"):
-            write(out_diff, line.rstrip(), "green")
-        elif line.startswith("-"):
-            write(out_diff, line.rstrip(), "red")
-        elif line.startswith("@@"):
-            write(out_diff, line.rstrip(), "yellow")
-        else:
-            write(out_diff, line.rstrip(), "dim")
+        if line.startswith("---") or line.startswith("+++"): write(out_diff, line.rstrip(), "cyan")
+        elif line.startswith("+"): write(out_diff, line.rstrip(), "green")
+        elif line.startswith("-"): write(out_diff, line.rstrip(), "red")
+        elif line.startswith("@@"): write(out_diff, line.rstrip(), "yellow")
+        else: write(out_diff, line.rstrip(), "dim")
 
 f_timestamp = ctk.CTkFrame(content, fg_color="transparent")
 title(f_timestamp, "Timestamp Converter", "Convert between Unix timestamps and human-readable dates")
@@ -2071,8 +1963,8 @@ def do_ts_to_unix():
 
 def do_ts_now():
     clear(out_ts)
-    now   = datetime.datetime.utcnow()
-    ts    = int(now.timestamp())
+    now = datetime.datetime.utcnow()
+    ts  = int(now.timestamp())
     write(out_ts, f"  Current UTC     :  {now.strftime('%Y-%m-%d %H:%M:%S')} UTC", "green")
     write(out_ts, f"  Unix Timestamp  :  {ts}", "cyan")
     write(out_ts, f"  Milliseconds    :  {ts * 1000}", "dim")
@@ -2089,8 +1981,7 @@ out_uuid = outbox(f_uuid, height=260)
 
 def do_uuid(version):
     clear(out_uuid)
-    try:
-        count = min(int(uuid_count.get().strip() or 10), 100)
+    try: count = min(int(uuid_count.get().strip() or 10), 100)
     except: count = 10
     write(out_uuid, f"  Generated {count} UUID v{version}(s):\n", "dim")
     for _ in range(count):
@@ -2111,18 +2002,12 @@ LOREM_WORDS = (
     "ut labore et dolore magna aliqua enim ad minim veniam quis nostrud exercitation ullamco "
     "laboris nisi aliquip ex ea commodo consequat duis aute irure dolor in reprehenderit "
     "voluptate velit esse cillum dolore eu fugiat nulla pariatur excepteur sint occaecat "
-    "cupidatat non proident sunt culpa qui officia deserunt mollit anim id est laborum "
-    "sed perspiciatis unde omnis iste natus error accusantium doloremque laudantium totam "
-    "rem aperiam eaque ipsa quae ab illo inventore veritatis quasi architecto beatae vitae "
-    "dicta explicabo nemo enim ipsam voluptatem quia voluptas aspernatur aut odit fugit "
-    "neque porro quisquam qui dolorem adipisci velit numquam eius modi tempora incidunt "
-    "magnam quaerat aliquam quaerat sapiente voluptatem accusantium doloremque"
+    "cupidatat non proident sunt culpa qui officia deserunt mollit anim id est laborum"
 ).split()
 
 def do_lorem():
     clear(out_lorem)
-    try:
-        count = min(int(lorem_count.get().strip() or 3), 10)
+    try: count = min(int(lorem_count.get().strip() or 3), 10)
     except: count = 3
     for _ in range(count):
         sentence_count = random.randint(4, 8)
@@ -2138,7 +2023,7 @@ f_color = ctk.CTkFrame(content, fg_color="transparent")
 title(f_color, "Colour Converter", "Convert between HEX, RGB, and HSL colour formats")
 color_hex = lentry(f_color, "HEX colour (with or without #)", "#1a8cff")
 r_color = irow(f_color)
-mk_btn(r_color, "  Convert", width=120, command=lambda: do_color_convert()).pack(side="left")
+mk_btn(r_color, "  Convert",     width=120, command=lambda: do_color_convert()).pack(side="left")
 mk_btn(r_color, "  Pick Colour", width=130, muted=True, command=lambda: do_color_pick()).pack(side="left", padx=(8,0))
 color_preview = ctk.CTkFrame(f_color, height=40, corner_radius=8, fg_color=C["card"])
 color_preview.pack(fill="x", pady=(0,4))
@@ -2189,7 +2074,6 @@ def do_color_pick():
 f_units = ctk.CTkFrame(content, fg_color="transparent")
 title(f_units, "Unit Converter", "Convert length, weight, temperature, and data size")
 unit_val = lentry(f_units, "Value", "100")
-
 ctk.CTkLabel(f_units, text="Category:", anchor="w",
              font=ctk.CTkFont(family=FONT_UI, size=11), text_color=C["text_dim"]).pack(fill="x")
 unit_cat_var = ctk.StringVar(value="Length")
@@ -2203,66 +2087,31 @@ mk_btn(f_units, "  Convert All", width=140, command=lambda: do_units()).pack(anc
 out_units = outbox(f_units, height=240)
 
 UNIT_TABLES = {
-    "Length": {
-        "metres":      1.0,
-        "kilometres":  0.001,
-        "centimetres": 100.0,
-        "millimetres": 1000.0,
-        "miles":       0.000621371,
-        "yards":       1.09361,
-        "feet":        3.28084,
-        "inches":      39.3701,
-        "nautical mi": 0.000539957,
-    },
-    "Weight": {
-        "kilograms": 1.0,
-        "grams":     1000.0,
-        "milligrams":1000000.0,
-        "tonnes":    0.001,
-        "pounds":    2.20462,
-        "ounces":    35.274,
-        "stones":    0.157473,
-    },
-    "Data Size": {
-        "bytes":     1.0,
-        "kilobytes": 1/1024,
-        "megabytes": 1/1048576,
-        "gigabytes": 1/1073741824,
-        "terabytes": 1/1099511627776,
-        "bits":      8.0,
-    },
-    "Speed": {
-        "m/s":   1.0,
-        "km/h":  3.6,
-        "mph":   2.23694,
-        "knots": 1.94384,
-        "ft/s":  3.28084,
-    },
+    "Length": {"metres":1.0,"kilometres":0.001,"centimetres":100.0,"millimetres":1000.0,
+               "miles":0.000621371,"yards":1.09361,"feet":3.28084,"inches":39.3701,"nautical mi":0.000539957},
+    "Weight": {"kilograms":1.0,"grams":1000.0,"milligrams":1000000.0,"tonnes":0.001,
+               "pounds":2.20462,"ounces":35.274,"stones":0.157473},
+    "Data Size": {"bytes":1.0,"kilobytes":1/1024,"megabytes":1/1048576,"gigabytes":1/1073741824,
+                  "terabytes":1/1099511627776,"bits":8.0},
+    "Speed": {"m/s":1.0,"km/h":3.6,"mph":2.23694,"knots":1.94384,"ft/s":3.28084},
 }
 
 def do_units():
     clear(out_units)
-    try:
-        val = float(unit_val.get().strip())
-    except:
-        write(out_units, "  Enter a valid number.", "red"); return
-
+    try: val = float(unit_val.get().strip())
+    except: write(out_units, "  Enter a valid number.", "red"); return
     cat = unit_cat_var.get()
-
     if cat == "Temperature":
         c = val
         write(out_units, f"  Input   :  {val}°C\n", "dim")
         write(out_units, f"  Celsius     :  {c:.4f} °C", "green")
         write(out_units, f"  Fahrenheit  :  {c * 9/5 + 32:.4f} °F", "yellow")
         write(out_units, f"  Kelvin      :  {c + 273.15:.4f} K", "cyan")
-        write(out_units, f"  Rankine     :  {(c + 273.15) * 9/5:.4f} °R", "dim")
         return
-
     table = UNIT_TABLES.get(cat, {})
     base_key = list(table.keys())[0]
     write(out_units, f"  Input  :  {val} {base_key}\n", "dim")
     for unit, rate in table.items():
-        result = val * rate / table[base_key]
         write(out_units, f"  {unit:<14}  :  {val * rate:.6g}", "green" if unit == base_key else "")
 
 f_numtools = ctk.CTkFrame(content, fg_color="transparent")
@@ -2291,7 +2140,6 @@ def settings_section(parent, label):
 settings_section(f_settings, "Appearance")
 c_s = card(f_settings); c_s.pack(fill="x", pady=(0,8))
 inner_s = ctk.CTkFrame(c_s, fg_color="transparent"); inner_s.pack(fill="x", padx=14, pady=14)
-
 ctk.CTkLabel(inner_s, text="Theme", anchor="w",
              font=ctk.CTkFont(family=FONT_UI, size=11), text_color=C["text_dim"]).pack(fill="x")
 theme_var = ctk.StringVar(value=settings["theme"])
@@ -2300,7 +2148,6 @@ for t in ["dark","light","system"]:
     ctk.CTkRadioButton(tr, text=t.capitalize(), variable=theme_var, value=t,
                         text_color=C["text"], font=ctk.CTkFont(family=FONT_UI, size=11)
                         ).pack(side="left", padx=12)
-
 ctk.CTkLabel(inner_s, text="Window Opacity", anchor="w",
              font=ctk.CTkFont(family=FONT_UI, size=11), text_color=C["text_dim"]).pack(fill="x")
 opacity_slider = ctk.CTkSlider(inner_s, from_=0.3, to=1.0, number_of_steps=14,
@@ -2320,7 +2167,6 @@ def _apply_opacity(val):
     app.attributes("-alpha", val)
 
 opacity_slider.configure(command=_apply_opacity)
-
 ctk.CTkLabel(inner_s, text="Font Size", anchor="w",
              font=ctk.CTkFont(family=FONT_UI, size=11), text_color=C["text_dim"]).pack(fill="x")
 font_slider = ctk.CTkSlider(inner_s, from_=9, to=16, number_of_steps=7,
@@ -2328,7 +2174,6 @@ font_slider = ctk.CTkSlider(inner_s, from_=9, to=16, number_of_steps=7,
                              progress_color=C["green_dark"])
 font_slider.set(settings["font_size"])
 font_slider.pack(fill="x", pady=(2,4))
-
 settings_section(f_settings, "Default Tab")
 tab_var = ctk.StringVar(value=settings["default_tab"])
 tab_opt = ctk.CTkOptionMenu(f_settings, variable=tab_var,
@@ -2349,22 +2194,17 @@ def _show_restart_dialog():
     x = app.winfo_x() + (app.winfo_width() // 2) - 180
     y = app.winfo_y() + (app.winfo_height() // 2) - 80
     dialog.geometry(f"+{x}+{y}")
-
     tk.Label(dialog, text="Settings Saved", bg=C["card"], fg=C["green"],
              font=(FONT_UI, 13, "bold")).pack(pady=(20, 4))
     tk.Label(dialog, text="Some changes need a restart to take full effect.",
              bg=C["card"], fg=C["text_dim"], font=(FONT_UI, 10)).pack()
-
     btn_frame = tk.Frame(dialog, bg=C["card"])
     btn_frame.pack(pady=20)
-
     def restart_now():
         dialog.destroy(); app.destroy()
         os.execv(sys.executable, [sys.executable] + sys.argv)
-
     def restart_later():
         dialog.destroy()
-
     tk.Button(btn_frame, text="  Restart Now  ", command=restart_now,
               bg=C["green_dark"], fg=C["green"], relief="flat",
               font=(FONT_UI, 11), cursor="hand2",
@@ -2393,8 +2233,7 @@ out_saved.pack(anchor="w", pady=8)
 
 make_section("OSINT",        ["IP Lookup","Email Headers","WHOIS","Reverse DNS","SSL Checker","Subnet Calc"],
              [f_ip, f_email, f_whois, f_rdns, f_ssl, f_subnet])
-make_section("Port Scanner", ["Scan Ports"],
-             [f_ps])
+make_section("Port Scanner", ["Scan Ports"], [f_ps])
 make_section("Network",      ["Ping","Traceroute","DNS Lookup","My IP","Netstat"],
              [f_ping, f_trace, f_dns, f_myip, f_netstat])
 make_section("Discord",      ["Send Message","Embed Sender","Webhook","DM Sender",
@@ -2411,22 +2250,16 @@ make_section("System Info",  ["System Info","Processes","Disk Info"],
              [f_sysinfo, f_procs, f_disk])
 make_section("Web Tools",    ["HTTP Headers","Site Status","Bulk IP Lookup"],
              [f_http, f_sitestatus, f_bulkip])
-make_section("File Tools",   ["File Hash","File Info"],
-             [f_filehash, f_fileinfo])
-make_section("Crypto",       ["Crypto Prices","Currency Converter"],
-             [f_crypto, f_convert])
-make_section("Text Tools",   ["Text Transformer"],
-             [f_texttools])
-make_section("QR Code",      ["QR Generator"],
-             [f_qr])
-make_section("Social Media", ["Platform IP Lookup","Username Checker"],
-             [f_social_ip, f_username])
+make_section("File Tools",   ["File Hash","File Info"], [f_filehash, f_fileinfo])
+make_section("Crypto",       ["Crypto Prices","Currency Converter"], [f_crypto, f_convert])
+make_section("Text Tools",   ["Text Transformer"], [f_texttools])
+make_section("QR Code",      ["QR Generator"], [f_qr])
+make_section("Social Media", ["Platform IP Lookup","Username Checker"], [f_social_ip, f_username])
 make_section("Dev Tools",    ["JSON Formatter","Regex Tester","Diff Checker","Timestamp Converter"],
              [f_json_fmt, f_regex, f_diff, f_timestamp])
 make_section("Generators",   ["UUID Generator","Colour Converter","Lorem Ipsum"],
              [f_uuid, f_color, f_lorem])
-make_section("Converters",   ["Unit Converter","Number Converter"],
-             [f_units, f_numtools])
+make_section("Converters",   ["Unit Converter","Number Converter"], [f_units, f_numtools])
 
 _divider(sidebar, C["green_dark"], 4)
 

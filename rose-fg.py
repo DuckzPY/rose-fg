@@ -23,8 +23,8 @@ import customtkinter as ctk
 from tkinter import colorchooser, ttk, filedialog
 import tkinter as tk
 
-SETTINGS_FILE = os.path.join(os.path.expanduser("~"), ".okaystoolkit_settings.json")
-NOTES_FILE    = os.path.join(os.path.expanduser("~"), ".okaystoolkit_notes.txt")
+SETTINGS_FILE = os.path.join(os.path.expanduser("~"), ".rose-fg_settings.json")
+NOTES_FILE    = os.path.join(os.path.expanduser("~"), ".rose-fg_notes.txt")
 
 def load_settings():
     defaults = {"theme": "dark", "accent": "blue", "opacity": 1.0, "font_size": 12, "default_tab": "OSINT"}
@@ -77,7 +77,7 @@ FONT_UI     = "Segoe UI"
 FONT_HEADER = "Segoe UI"
 
 app = ctk.CTk()
-app.title("Okay's Toolkit  v6.0")
+app.title("rose-fg  v6.0")
 app.geometry("1080x720")
 app.resizable(True, True)
 app.configure(fg_color=C["bg"])
@@ -117,9 +117,9 @@ pulse_dot()
 
 logo_text = ctk.CTkFrame(logo_frame, fg_color="transparent")
 logo_text.pack(side="left")
-ctk.CTkLabel(logo_text, text="OKAY'S", font=ctk.CTkFont(family=FONT_HEADER, size=15, weight="bold"),
+ctk.CTkLabel(logo_text, text="rose-fg", font=ctk.CTkFont(family=FONT_HEADER, size=15, weight="bold"),
              text_color=C["green"]).pack(anchor="w")
-ctk.CTkLabel(logo_text, text="TOOLKIT  v6.0", font=ctk.CTkFont(family=FONT_HEADER, size=10),
+ctk.CTkLabel(logo_text, text="rose-fg  v6.0", font=ctk.CTkFont(family=FONT_HEADER, size=10),
              text_color=C["text_dim"]).pack(anchor="w")
 
 def _divider(parent, color=C["border"], pady=6):

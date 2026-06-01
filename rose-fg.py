@@ -2131,184 +2131,6 @@ def do_filecmp():
     except Exception as e:
         write(out_fc, f"  Error: {e}", "red")
 
-f_subdomains = ctk.CTkFrame(content, fg_color="transparent")
-title(f_subdomains, "Subdomain Finder", "Discover subdomains from certificate transparency logs")
-r_sd = ctk.CTkFrame(f_subdomains, fg_color="transparent"); r_sd.pack(fill="x", padx=14, pady=14)
-e_subdomains = ctk.CTkEntry(r_sd, placeholder_text="Domain  e.g.  example.com",
-                         fg_color=C["card2"], border_color=C["border"], text_color=C["text"],
-                         placeholder_text_color=C["text_muted"],
-                         font=ctk.CTkFont(family=FONT_MONO, size=11), corner_radius=6, border_width=1)
-e_subdomains.pack(side="left", expand=True, fill="x")
-mk_btn(r_sd, "  Find Subdomains", width=170,
-       command=lambda: threading.Thread(target=do_subdomains, daemon=True).start()).pack(side="left", padx=(10,0))
-out_subdomains = outbox(f_subdomains, height=260)
-
-def do_subdomains():
-    domain = e_subdomains.get().strip().lstrip("*.")
-    clear(out_subdomains)
-    if not domain:
-        write(out_subdomains, "  Enter a domain.", "yellow"); return
-    write(out_subdomains, f"  Querying crt.sh for {domain}...\n", "dim")
-    try:
-        url = f"https://crt.sh/?q=%25.{urllib.parse.quote(domain)}&output=json"
-        req = urllib.request.Request(url, headers={"User-Agent":"Mozilla/5.0"})
-        text = urllib.request.urlopen(req, timeout=15).read().decode(errors="replace")
-        data = json.loads(text)
-        names = []
-        seen = set()
-        for entry in data:
-            name_value = entry.get("name_value", "")
-            for n in name_value.splitlines():
-                n = n.strip().lower()
-                if n and n not in seen:
-                    seen.add(n)
-                    if n.endswith(domain):
-                        names.append(n)
-        if not names:
-            write(out_subdomains, "  No subdomains found.", "yellow")
-            return
-        write(out_subdomains, f"  Found {len(names)} unique subdomains:\n", "green")
-        for n in names[:100]:
-            write(out_subdomains, f"  {n}")
-        if len(names) > 100:
-            write(out_subdomains, f"  ...and {len(names)-100} more", "dim")
-    except Exception as e:
-        write(out_subdomains, f"  Error: {e}", "red")
-
-f_spf = ctk.CTkFrame(content, fg_color="transparent")
-title(f_spf, "SPF / DMARC Checker", "Fetch SPF and DMARC TXT records for a domain")
-r_spf = ctk.CTkFrame(f_spf, fg_color="transparent"); r_spf.pack(fill="x", padx=14, pady=14)
-e_spf = ctk.CTkEntry(r_spf, placeholder_text="Domain  e.g.  example.com",
-                     fg_color=C["card2"], border_color=C["border"], text_color=C["text"],
-                     placeholder_text_color=C["text_muted"],
-                     font=ctk.CTkFont(family=FONT_MONO, size=11), corner_radius=6, border_width=1)
-e_spf.pack(side="left", expand=True, fill="x")
-mk_btn(r_spf, "  Check Records", width=150,
-       command=lambda: threading.Thread(target=do_spf_dmarc, daemon=True).start()).pack(side="left", padx=(10,0))
-out_spf = outbox(f_spf, height=220)
-
-def fetch_dns_txt_records(name):
-    url = f"https://dns.google/resolve?name={urllib.parse.quote(name)}&type=16"
-    req = urllib.request.Request(url, headers={"User-Agent":"Mozilla/5.0"})
-    data = json.loads(urllib.request.urlopen(req, timeout=10).read().decode(errors="replace"))
-    answers = data.get("Answer", []) or []
-    records = []
-    for item in answers:
-        text = item.get("data", "")
-        if text:
-            records.append(text.strip().strip('"'))
-    return records
-
-def do_spf_dmarc():
-    domain = e_spf.get().strip().lstrip("*.")
-    clear(out_spf)
-    if not domain:
-        write(out_spf, "  Enter a domain.", "yellow"); return
-    write(out_spf, f"  Checking SPF and DMARC for {domain}...\n", "dim")
-    try:
-        spf_records = [r for r in fetch_dns_txt_records(domain) if r.lower().startswith("v=spf1")]
-        dmarc_records = [r for r in fetch_dns_txt_records(f"_dmarc.{domain}") if r.lower().startswith("v=dmarc1")]
-        if spf_records:
-            write(out_spf, "  SPF records:", "cyan")
-            for r in spf_records: write(out_spf, f"  {r}")
-        else:
-            write(out_spf, "  No SPF record found.", "yellow")
-        if dmarc_records:
-            write(out_spf, "\n  DMARC records:", "cyan")
-            for r in dmarc_records: write(out_spf, f"  {r}")
-        else:
-            write(out_spf, "\n  No DMARC record found.", "yellow")
-    except Exception as e:
-        write(out_spf, f"  Error: {e}", "red")
-
-f_pwned = ctk.CTkFrame(content, fg_color="transparent")
-title(f_pwned, "Password Leak Check", "Check whether a password appears in public breach data")
-r_pwned = ctk.CTkFrame(f_pwned, fg_color="transparent"); r_pwned.pack(fill="x", padx=14, pady=14)
-e_pwned = ctk.CTkEntry(r_pwned, placeholder_text="Enter password to check",
-                         fg_color=C["card2"], border_color=C["border"], text_color=C["text"],
-                         placeholder_text_color=C["text_muted"],
-                         font=ctk.CTkFont(family=FONT_MONO, size=11), corner_radius=6, border_width=1, show="*")
-e_pwned.pack(side="left", expand=True, fill="x")
-mk_btn(r_pwned, "  Check Password", width=150,
-       command=lambda: threading.Thread(target=do_pwned_password, daemon=True).start()).pack(side="left", padx=(10,0))
-out_pwned = outbox(f_pwned, height=200)
-
-def do_pwned_password():
-    pwd = e_pwned.get().strip()
-    clear(out_pwned)
-    if not pwd:
-        write(out_pwned, "  Enter a password.", "yellow"); return
-    write(out_pwned, "  Checking password leak database...\n", "dim")
-    try:
-        digest = hashlib.sha1(pwd.encode("utf-8")).hexdigest().upper()
-        prefix, suffix = digest[:5], digest[5:]
-        req = urllib.request.Request(f"https://api.pwnedpasswords.com/range/{prefix}", headers={"User-Agent":"Mozilla/5.0"})
-        body = urllib.request.urlopen(req, timeout=10).read().decode(errors="replace")
-        count = 0
-        for line in body.splitlines():
-            if not line: continue
-            h, c = line.split(":")
-            if h == suffix:
-                count = int(c.strip())
-                break
-        if count:
-            write(out_pwned, f"  This password was seen {count:,} times in breaches.", "red")
-        else:
-            write(out_pwned, "  Nice — this password was not found in the Pwned Passwords list.", "green")
-    except Exception as e:
-        write(out_pwned, f"  Error: {e}", "red")
-
-f_portmap = ctk.CTkFrame(content, fg_color="transparent")
-title(f_portmap, "Port Process Map", "List local ports and the owning process")
-r_portmap = ctk.CTkFrame(f_portmap, fg_color="transparent"); r_portmap.pack(fill="x", padx=14, pady=14)
-pp_filter = ctk.CTkEntry(r_portmap, placeholder_text="Optional port number",
-                         fg_color=C["card2"], border_color=C["border"], text_color=C["text"],
-                         placeholder_text_color=C["text_muted"],
-                         font=ctk.CTkFont(family=FONT_MONO, size=11), corner_radius=6, border_width=1)
-pp_filter.pack(side="left", expand=True, fill="x")
-mk_btn(r_portmap, "  Refresh", width=120,
-       command=lambda: threading.Thread(target=do_portmap, daemon=True).start()).pack(side="left", padx=(10,0))
-out_portmap = outbox(f_portmap, height=260)
-
-def do_portmap():
-    clear(out_portmap)
-    filter_text = pp_filter.get().strip()
-    filt = None
-    if filter_text:
-        try:
-            filt = int(filter_text)
-        except:
-            write(out_portmap, "  Invalid port number.", "yellow"); return
-    write(out_portmap, "  Gathering local port mappings...\n", "dim")
-    try:
-        conns = psutil.net_connections(kind='inet')
-        entries = []
-        for conn in conns:
-            if not conn.laddr: continue
-            port = conn.laddr.port
-            if filt and port != filt: continue
-            proto = 'TCP' if conn.type == socket.SOCK_STREAM else 'UDP'
-            pid = conn.pid or 0
-            name = 'N/A'
-            if pid:
-                try:
-                    name = psutil.Process(pid).name()
-                except Exception:
-                    name = str(pid)
-            status = conn.status
-            entries.append((port, proto, name, status))
-        entries.sort(key=lambda x: (x[0], x[1], x[2]))
-        if not entries:
-            write(out_portmap, "  No local port connections found.", "yellow")
-            return
-        for port, proto, name, status in entries[:200]:
-            write(out_portmap, f"  {port:<5} {proto:<4} {name:<25} {status}")
-        if len(entries) > 200:
-            write(out_portmap, f"  ...and {len(entries)-200} more", "dim")
-        write(out_portmap, f"\n  Total entries: {len(entries)}", "green")
-    except Exception as e:
-        write(out_portmap, f"  Error: {e}", "red")
-
 f_filemeta = ctk.CTkFrame(content, fg_color="transparent")
 title(f_filemeta, "File Metadata", "View image metadata and file attributes")
 fm_path = make_drag_drop_entry(f_filemeta, "File path", "C:\\path\\to\\file")
@@ -3209,16 +3031,16 @@ out_saved.pack(anchor="w", pady=8)
 #  SIDEBAR MENUS  — all frames now defined above
 # ════════════════════════════════════════════════════════════
 make_section("OSINT",
-    ["IP Lookup","Email Headers","WHOIS","Reverse DNS","SSL Checker","Subnet Calc","DNS Records","Subdomain Finder","SPF/DMARC"],
-    [f_ip, f_email, f_whois, f_rdns, f_ssl, f_subnet, f_dnsrec, f_subdomains, f_spf])
+    ["IP Lookup","Email Headers","WHOIS","Reverse DNS","SSL Checker","Subnet Calc","DNS Records"],
+    [f_ip, f_email, f_whois, f_rdns, f_ssl, f_subnet, f_dnsrec])
 
 make_section("Port Scanner",
     ["Scan Ports","Banner Grabber"],
     [f_ps, f_banner])
 
 make_section("Network",
-    ["Ping","Traceroute","DNS Lookup","My IP","Netstat","ARP Scanner","Speed Test","Port Map"],
-    [f_ping, f_trace, f_dns, f_myip, f_netstat, f_arp, f_speed, f_portmap])
+    ["Ping","Traceroute","DNS Lookup","My IP","Netstat","ARP Scanner","Speed Test"],
+    [f_ping, f_trace, f_dns, f_myip, f_netstat, f_arp, f_speed])
 
 make_section("Discord",
     ["Send Message","Embed Sender","Webhook","DM Sender",
@@ -3231,8 +3053,8 @@ make_section("Discord",
      f_disc_user, f_disc_bulkdel, f_disc_builder])
 
 make_section("Passwords",
-    ["Generator","Passphrase","Hash Generator","Strength Checker","Pwned Password"],
-    [f_passgen, f_passphrase, f_hasher, f_passcheck, f_pwned])
+    ["Generator","Passphrase","Hash Generator","Strength Checker"],
+    [f_passgen, f_passphrase, f_hasher, f_passcheck])
 
 make_section("Encoding",
     ["Base64","URL Encode","Hex Converter","Caesar / ROT13","JWT Decoder","Morse Code","Binary ↔ Text"],

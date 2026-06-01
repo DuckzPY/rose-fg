@@ -1,4 +1,4 @@
-# rose-fg &nbsp;·&nbsp; v6.0
+# rose-fg &nbsp;·&nbsp; v1.0
 > A private, offline-first toolkit for network intelligence, OSINT, Discord automation, and developer utilities — built with Python and CustomTkinter.
 
 ---

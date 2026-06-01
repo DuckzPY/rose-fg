@@ -268,6 +268,7 @@ All other imports (`socket`, `threading`, `urllib`, `subprocess`, `ssl`, `hashli
 
 *Private project — not for redistribution.*
 
+*Join the discord here:*
 ```
-Join the discord here: https://discord.gg/9g3VtekQ5y
+https://discord.gg/9g3VtekQ5y
 ```

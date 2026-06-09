@@ -59,7 +59,7 @@ Or run the requirements.bat file to install them automatically
 ### 4. Run
 
 ```bash
-python main.py
+python rose-fg.py
 ```
 
 > **Important:** Always launch via the terminal with the venv active. Running the script by double-clicking or via a shortcut will likely fail with import errors because it won't use the venv's Python.

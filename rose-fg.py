@@ -18,7 +18,7 @@ import uuid
 import difflib
 import qrcode
 from io import BytesIO
-from PIL import ExifTags, Image, ImageTk
+from PIL import ExifTags, Image, Image
 import customtkinter as ctk
 from tkinter import colorchooser, ttk, filedialog
 import tkinter as tk
@@ -41,18 +41,10 @@ def save_settings(s):
         json.dump(s, f)
 
 settings = load_settings()
-ctk.set_appearance_mode("dark")
-ctk.set_default_color_theme("blue")
 
-stop_flag = False
-
-SERVICES = {
-    21:"FTP", 22:"SSH", 23:"Telnet", 25:"SMTP", 53:"DNS", 80:"HTTP", 110:"POP3",
-    135:"RPC", 139:"NetBIOS", 143:"IMAP", 443:"HTTPS", 445:"SMB", 993:"IMAPS",
-    995:"POP3S", 1433:"MSSQL", 3306:"MySQL", 3389:"RDP", 5432:"PostgreSQL",
-    5900:"VNC", 6379:"Redis", 8080:"HTTP-Alt", 8443:"HTTPS-Alt", 27017:"MongoDB", 631:"IPP",
-}
-
+# ════════════════════════════════════════════════════════════
+#  COLOUR PALETTE  (defined early so loader can use it)
+# ════════════════════════════════════════════════════════════
 C = {
     "bg":        "#080008",
     "sidebar":   "#060006",
@@ -80,6 +72,219 @@ C = {
 FONT_MONO   = "JetBrains Mono"
 FONT_UI     = "Inter"
 FONT_HEADER = "Inter"
+
+# ════════════════════════════════════════════════════════════
+#  LOADING SCREEN
+# ════════════════════════════════════════════════════════════
+
+#  ↓↓↓  PUT YOUR DISCORD INVITE LINK HERE  ↓↓↓
+DISCORD_LINK = "https://discord.gg/GUuFrS9V5v"
+
+def show_loading_screen():
+    """Animated splash screen — runs before the main window opens."""
+    import math
+
+    splash = tk.Tk()
+    splash.overrideredirect(True)
+    splash.configure(bg=C["bg"])
+    splash.attributes("-alpha", 0.0)
+
+    W, H = 520, 360
+    sw   = splash.winfo_screenwidth()
+    sh   = splash.winfo_screenheight()
+    splash.geometry(f"{W}x{H}+{(sw-W)//2}+{(sh-H)//2}")
+    splash.lift()
+    splash.attributes("-topmost", True)
+
+    canvas = tk.Canvas(splash, width=W, height=H,
+                        bg=C["bg"], highlightthickness=0)
+    canvas.pack(fill="both", expand=True)
+
+    # ── border ──
+    canvas.create_rectangle(0,   0,   W,   H,   outline=C["border"],    width=1)
+    canvas.create_rectangle(2,   2,   W-2, H-2, outline=C["green_dark"],width=1)
+
+    # ── top + bottom accent bars ──
+    canvas.create_rectangle(0, 0,   W, 3, fill=C["green"], outline="")
+    canvas.create_rectangle(0, H-3, W, H, fill=C["green_dark"], outline="")
+
+    # ── glowing halo behind wordmark ──
+    for r_halo, alpha_hex in [(80,"0d"), (60,"18"), (40,"28"), (24,"44")]:
+        col = f"#FF0054" if alpha_hex == "44" else C["card"]
+        # tkinter canvas doesn't do true rgba, so we stack dark circles for depth
+        canvas.create_oval(W//2 - r_halo, 75 - r_halo//2,
+                           W//2 + r_halo, 75 + r_halo//2,
+                           fill=C["card"], outline="")
+
+    # ── wordmark ──
+    canvas.create_text(W//2, 86,
+        text="rose-fg",
+        font=("Inter", 44, "bold"),
+        fill=C["green"], anchor="center")
+
+    canvas.create_text(W//2, 134,
+        text="v7.0",
+        font=("Inter", 12),
+        fill=C["text_muted"], anchor="center")
+
+    # ── thin separator ──
+    canvas.create_line(W//2-130, 158, W//2+130, 158,
+                        fill=C["border"], width=1)
+
+    # ── animated wave dots ──
+    DOT_Y   = 192
+    DOT_R   = 4
+    DOT_GAP = 20
+    N_DOTS  = 9
+    dot_ids = []
+    sx      = W//2 - ((N_DOTS-1) * DOT_GAP) // 2
+    for i in range(N_DOTS):
+        cx  = sx + i * DOT_GAP
+        did = canvas.create_oval(cx-DOT_R, DOT_Y-DOT_R, cx+DOT_R, DOT_Y+DOT_R,
+                                  fill=C["green_dark"], outline=C["border"], width=1)
+        dot_ids.append(did)
+
+    # ── progress track + fill ──
+    BX1, BY1 = 60,  228
+    BX2, BY2 = W-60, 241
+    canvas.create_rectangle(BX1, BY1, BX2, BY2,
+                             fill=C["card"], outline=C["border"], width=1)
+    prog_fill = canvas.create_rectangle(BX1+1, BY1+1, BX1+1, BY2-1,
+                                         fill=C["green"], outline="")
+
+    # ── status text ──
+    status_var = tk.StringVar(value="Initialising...")
+    tk.Label(splash, textvariable=status_var,
+             bg=C["bg"], fg=C["text_muted"],
+             font=("JetBrains Mono", 9)).place(x=W//2, y=255, anchor="center")
+
+    # ── Discord invite button ──
+    dc_bg_id  = canvas.create_rectangle(W//2-104, 282, W//2+104, 310,
+                                          fill=C["card"], outline=C["border"], width=1)
+    # left-side pink accent sliver
+    canvas.create_rectangle(W//2-104, 282, W//2-101, 310,
+                             fill=C["green"], outline="")
+
+    dc_lbl = tk.Label(splash,
+                       text="◆  Join our Discord",
+                       bg=C["card"], fg=C["blue"],
+                       font=("Inter", 10),
+                       cursor="hand2",
+                       padx=0, pady=0)
+    dc_lbl.place(x=W//2+2, y=296, anchor="center")
+
+    def _dc_enter(e):
+        dc_lbl.configure(fg=C["green"])
+        canvas.itemconfig(dc_bg_id, fill=C["card2"])
+        dc_lbl.configure(bg=C["card2"])
+
+    def _dc_leave(e):
+        dc_lbl.configure(fg=C["blue"])
+        canvas.itemconfig(dc_bg_id, fill=C["card"])
+        dc_lbl.configure(bg=C["card"])
+
+    def _dc_click(e):
+        import webbrowser
+        webbrowser.open(DISCORD_LINK)
+
+    dc_lbl.bind("<Enter>",    _dc_enter)
+    dc_lbl.bind("<Leave>",    _dc_leave)
+    dc_lbl.bind("<Button-1>", _dc_click)
+
+    # ── tiny url hint ──
+    canvas.create_text(W//2, 322,
+        text=DISCORD_LINK,
+        font=("JetBrains Mono", 7),
+        fill=C["text_muted"], anchor="center")
+
+    # ════════ animation ════════
+    TOTAL_MS  = 3500
+    _done     = [False]
+
+    STATUS_STEPS = [
+        (0.00, "Initialising core modules..."),
+        (0.15, "Loading OSINT toolkit..."),
+        (0.30, "Configuring network scanner..."),
+        (0.48, "Loading Discord tools..."),
+        (0.63, "Starting encoding utilities..."),
+        (0.78, "Applying appearance settings..."),
+        (0.91, "Almost there..."),
+        (0.97, "Ready."),
+    ]
+
+    def animate(frame=0):
+        if _done[0]:
+            return
+
+        elapsed = frame * 16
+        t       = min(elapsed / TOTAL_MS, 1.0)
+        eased   = 1 - (1 - t) ** 2.6     # ease-out
+
+        # progress bar
+        bar_w = max(0, (BX2 - BX1 - 2) * eased)
+        canvas.coords(prog_fill, BX1+1, BY1+1, BX1+1+bar_w, BY2-1)
+
+        # status label
+        for threshold, msg in reversed(STATUS_STEPS):
+            if t >= threshold:
+                if status_var.get() != msg:
+                    status_var.set(msg)
+                break
+
+        # travelling wave through dots
+        for i, did in enumerate(dot_ids):
+            phase  = (frame / 14.0) - (i * 0.55)
+            bright = (math.sin(phase) + 1) / 2
+            r = int(0x1a + (0xFF - 0x1a) * bright)
+            g = 0x00
+            b = int(0x10 + (0x54 - 0x10) * bright)
+            canvas.itemconfig(did, fill=f"#{r:02x}{g:02x}{b:02x}")
+
+        # fade in during first 10 %
+        if t < 0.10:
+            splash.attributes("-alpha", min(1.0, t / 0.10))
+        else:
+            splash.attributes("-alpha", 1.0)
+
+        if t < 1.0:
+            splash.after(16, lambda: animate(frame + 1))
+        else:
+            splash.after(300, fade_out)
+
+    def fade_out(step=0):
+        if _done[0]:
+            return
+        alpha = max(0.0, 1.0 - step * 0.09)
+        splash.attributes("-alpha", alpha)
+        if alpha > 0:
+            splash.after(14, lambda: fade_out(step + 1))
+        else:
+            _done[0] = True
+            splash.destroy()
+
+    animate()
+    splash.mainloop()
+
+
+# ── Show loading screen before anything else ──
+show_loading_screen()
+
+
+# ════════════════════════════════════════════════════════════
+#  MAIN APPLICATION
+# ════════════════════════════════════════════════════════════
+
+ctk.set_appearance_mode("dark")
+ctk.set_default_color_theme("blue")
+
+stop_flag = False
+
+SERVICES = {
+    21:"FTP", 22:"SSH", 23:"Telnet", 25:"SMTP", 53:"DNS", 80:"HTTP", 110:"POP3",
+    135:"RPC", 139:"NetBIOS", 143:"IMAP", 443:"HTTPS", 445:"SMB", 993:"IMAPS",
+    995:"POP3S", 1433:"MSSQL", 3306:"MySQL", 3389:"RDP", 5432:"PostgreSQL",
+    5900:"VNC", 6379:"Redis", 8080:"HTTP-Alt", 8443:"HTTPS-Alt", 27017:"MongoDB", 631:"IPP",
+}
 
 app = ctk.CTk()
 app.title("rose-fg  v7.0")
@@ -968,7 +1173,7 @@ def do_speed():
         write(out_speed, f"  Error: {e}", "red")
 
 # ════════════════════════════════════════════════════════════
-#  DISCORD  — single api_discord definition + all UI frames
+#  DISCORD
 # ════════════════════════════════════════════════════════════
 
 def api_discord(path, token, method="GET", body=None):
@@ -2979,6 +3184,20 @@ tab_opt = ctk.CTkOptionMenu(f_settings, variable=tab_var,
                               text_color=C["text"], font=ctk.CTkFont(family=FONT_UI, size=11))
 tab_opt.pack(anchor="w", pady=(0,16))
 
+# ── Discord invite in settings ──
+settings_section(f_settings, "Discord Link  (shown on loading screen)")
+c_dc_s = card(f_settings); c_dc_s.pack(fill="x", pady=(0,8))
+inner_dc_s = ctk.CTkFrame(c_dc_s, fg_color="transparent"); inner_dc_s.pack(fill="x", padx=14, pady=14)
+dc_link_entry = ctk.CTkEntry(inner_dc_s, placeholder_text="https://discord.gg/yourinvitehere",
+                              fg_color=C["card2"], border_color=C["border"], text_color=C["text"],
+                              placeholder_text_color=C["text_muted"],
+                              font=ctk.CTkFont(family=FONT_MONO, size=11), corner_radius=6, border_width=1)
+dc_link_entry.insert(0, DISCORD_LINK)
+dc_link_entry.pack(fill="x", pady=(2, 4))
+ctk.CTkLabel(inner_dc_s, text="Edit DISCORD_LINK at the top of the file to permanently change this.",
+             anchor="w", font=ctk.CTkFont(family=FONT_UI, size=10),
+             text_color=C["text_muted"]).pack(anchor="w")
+
 def _show_restart_dialog():
     dialog = tk.Toplevel(app)
     dialog.title("Restart Required")
@@ -3028,7 +3247,7 @@ out_saved = ctk.CTkLabel(f_settings, text="", text_color=C["green"],
 out_saved.pack(anchor="w", pady=8)
 
 # ════════════════════════════════════════════════════════════
-#  SIDEBAR MENUS  — all frames now defined above
+#  SIDEBAR MENUS
 # ════════════════════════════════════════════════════════════
 make_section("OSINT",
     ["IP Lookup","Email Headers","WHOIS","Reverse DNS","SSL Checker","Subnet Calc","DNS Records"],

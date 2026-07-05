@@ -3184,20 +3184,6 @@ tab_opt = ctk.CTkOptionMenu(f_settings, variable=tab_var,
                               text_color=C["text"], font=ctk.CTkFont(family=FONT_UI, size=11))
 tab_opt.pack(anchor="w", pady=(0,16))
 
-# ── Discord invite in settings ──
-settings_section(f_settings, "Discord Link  (shown on loading screen)")
-c_dc_s = card(f_settings); c_dc_s.pack(fill="x", pady=(0,8))
-inner_dc_s = ctk.CTkFrame(c_dc_s, fg_color="transparent"); inner_dc_s.pack(fill="x", padx=14, pady=14)
-dc_link_entry = ctk.CTkEntry(inner_dc_s, placeholder_text="https://discord.gg/yourinvitehere",
-                              fg_color=C["card2"], border_color=C["border"], text_color=C["text"],
-                              placeholder_text_color=C["text_muted"],
-                              font=ctk.CTkFont(family=FONT_MONO, size=11), corner_radius=6, border_width=1)
-dc_link_entry.insert(0, DISCORD_LINK)
-dc_link_entry.pack(fill="x", pady=(2, 4))
-ctk.CTkLabel(inner_dc_s, text="Edit DISCORD_LINK at the top of the file to permanently change this.",
-             anchor="w", font=ctk.CTkFont(family=FONT_UI, size=10),
-             text_color=C["text_muted"]).pack(anchor="w")
-
 def _show_restart_dialog():
     dialog = tk.Toplevel(app)
     dialog.title("Restart Required")

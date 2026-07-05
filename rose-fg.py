@@ -3244,8 +3244,19 @@ def save_and_apply():
 mk_btn(f_settings, "  Save Settings", width=160, command=save_and_apply).pack(anchor="w")
 out_saved = ctk.CTkLabel(f_settings, text="", text_color=C["green"],
                            font=ctk.CTkFont(family=FONT_MONO, size=11))
-out_saved.pack(anchor="w", pady=8)
+out_saved.pack(anchor="w", pady=(2, 0))
 
+ctk.CTkLabel(f_settings, text="Roadmap", anchor="w",
+             font=ctk.CTkFont(family=FONT_UI, size=13, weight="bold"),
+             text_color=C["text"]).pack(fill="x", pady=(4, 4))
+c_roadmap = card(f_settings); c_roadmap.pack(fill="x", pady=(0, 16))
+inner_roadmap = ctk.CTkFrame(c_roadmap, fg_color="transparent")
+inner_roadmap.pack(fill="x", padx=14, pady=14)
+ctk.CTkLabel(inner_roadmap,
+             text="Once rose-fg reaches v15.0, development focus will shift to starting work on rose-ng.",
+             anchor="w", justify="left",
+             font=ctk.CTkFont(family=FONT_UI, size=11),
+             text_color=C["text_dim"]).pack(anchor="w", fill="x")
 # ════════════════════════════════════════════════════════════
 #  SIDEBAR MENUS
 # ════════════════════════════════════════════════════════════

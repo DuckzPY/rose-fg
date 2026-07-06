@@ -42,9 +42,9 @@ def save_settings(s):
 
 settings = load_settings()
 
-# ════════════════════════════════════════════════════════════
-#  COLOUR PALETTE  (defined early so loader can use it)
-# ════════════════════════════════════════════════════════════
+# ────────────────
+#  CONFIG
+# ────────────────
 C = {
     "bg":        "#080008",
     "sidebar":   "#060006",
@@ -73,15 +73,14 @@ FONT_MONO   = "JetBrains Mono"
 FONT_UI     = "Inter"
 FONT_HEADER = "Inter"
 
-# ════════════════════════════════════════════════════════════
-#  LOADING SCREEN
-# ════════════════════════════════════════════════════════════
+# ───────
+#  STARTUP
+# ───────
 
-#  ↓↓↓  PUT YOUR DISCORD INVITE LINK HERE  ↓↓↓
 DISCORD_LINK = "https://discord.gg/GUuFrS9V5v"
 
 def show_loading_screen():
-    """Animated splash screen — runs before the main window opens."""
+    """Startup splash screen."""
     import math
 
     splash = tk.Tk()
@@ -100,23 +99,23 @@ def show_loading_screen():
                         bg=C["bg"], highlightthickness=0)
     canvas.pack(fill="both", expand=True)
 
-    # ── border ──
+    # layout
     canvas.create_rectangle(0,   0,   W,   H,   outline=C["border"],    width=1)
     canvas.create_rectangle(2,   2,   W-2, H-2, outline=C["green_dark"],width=1)
 
-    # ── top + bottom accent bars ──
+    # layout
     canvas.create_rectangle(0, 0,   W, 3, fill=C["green"], outline="")
     canvas.create_rectangle(0, H-3, W, H, fill=C["green_dark"], outline="")
 
-    # ── glowing halo behind wordmark ──
+    # layout
     for r_halo, alpha_hex in [(80,"0d"), (60,"18"), (40,"28"), (24,"44")]:
         col = f"#FF0054" if alpha_hex == "44" else C["card"]
-        # tkinter canvas doesn't do true rgba, so we stack dark circles for depth
+        # layout
         canvas.create_oval(W//2 - r_halo, 75 - r_halo//2,
                            W//2 + r_halo, 75 + r_halo//2,
                            fill=C["card"], outline="")
 
-    # ── wordmark ──
+    # layout
     canvas.create_text(W//2, 86,
         text="rose-fg",
         font=("Inter", 44, "bold"),
@@ -127,11 +126,11 @@ def show_loading_screen():
         font=("Inter", 12),
         fill=C["text_muted"], anchor="center")
 
-    # ── thin separator ──
+    # layout
     canvas.create_line(W//2-130, 158, W//2+130, 158,
                         fill=C["border"], width=1)
 
-    # ── animated wave dots ──
+    # layout
     DOT_Y   = 192
     DOT_R   = 4
     DOT_GAP = 20
@@ -144,7 +143,7 @@ def show_loading_screen():
                                   fill=C["green_dark"], outline=C["border"], width=1)
         dot_ids.append(did)
 
-    # ── progress track + fill ──
+    # layout
     BX1, BY1 = 60,  228
     BX2, BY2 = W-60, 241
     canvas.create_rectangle(BX1, BY1, BX2, BY2,
@@ -152,16 +151,16 @@ def show_loading_screen():
     prog_fill = canvas.create_rectangle(BX1+1, BY1+1, BX1+1, BY2-1,
                                          fill=C["green"], outline="")
 
-    # ── status text ──
+    # layout
     status_var = tk.StringVar(value="Initialising...")
     tk.Label(splash, textvariable=status_var,
              bg=C["bg"], fg=C["text_muted"],
              font=("JetBrains Mono", 9)).place(x=W//2, y=255, anchor="center")
 
-    # ── Discord invite button ──
+    # layout
     dc_bg_id  = canvas.create_rectangle(W//2-104, 282, W//2+104, 310,
                                           fill=C["card"], outline=C["border"], width=1)
-    # left-side pink accent sliver
+    # layout
     canvas.create_rectangle(W//2-104, 282, W//2-101, 310,
                              fill=C["green"], outline="")
 
@@ -191,13 +190,13 @@ def show_loading_screen():
     dc_lbl.bind("<Leave>",    _dc_leave)
     dc_lbl.bind("<Button-1>", _dc_click)
 
-    # ── tiny url hint ──
+    # layout
     canvas.create_text(W//2, 322,
         text=DISCORD_LINK,
         font=("JetBrains Mono", 7),
         fill=C["text_muted"], anchor="center")
 
-    # ════════ animation ════════
+    # animation
     TOTAL_MS  = 3500
     _done     = [False]
 
@@ -231,7 +230,7 @@ def show_loading_screen():
                     status_var.set(msg)
                 break
 
-        # travelling wave through dots
+        # animation
         for i, did in enumerate(dot_ids):
             phase  = (frame / 14.0) - (i * 0.55)
             bright = (math.sin(phase) + 1) / 2
@@ -240,7 +239,7 @@ def show_loading_screen():
             b = int(0x10 + (0x54 - 0x10) * bright)
             canvas.itemconfig(did, fill=f"#{r:02x}{g:02x}{b:02x}")
 
-        # fade in during first 10 %
+        # animation
         if t < 0.10:
             splash.attributes("-alpha", min(1.0, t / 0.10))
         else:
@@ -266,13 +265,13 @@ def show_loading_screen():
     splash.mainloop()
 
 
-# ── Show loading screen before anything else ──
+# startup sequence
 show_loading_screen()
 
 
-# ════════════════════════════════════════════════════════════
-#  MAIN APPLICATION
-# ════════════════════════════════════════════════════════════
+# ────────
+#  APP
+# ────────
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
@@ -426,7 +425,7 @@ status_dot2.pack(side="left", padx=16, pady=4)
 content = ctk.CTkFrame(content_outer, fg_color="transparent")
 content.pack(fill="both", expand=True, padx=24, pady=20)
 
-# ─── TERMINAL OUTPUT ──────────────────────────────────────────────────────────
+# helper
 def outbox(parent, height=320):
     fs = settings["font_size"]
     outer = ctk.CTkFrame(parent, fg_color=C["term_bg"], corner_radius=8,
@@ -571,9 +570,9 @@ def make_drag_drop_entry(parent, label, placeholder):
         pass
     return e
 
-# ════════════════════════════════════════════════════════════
-#  OSINT
-# ════════════════════════════════════════════════════════════
+# ────────────
+#  SECTION A
+# ────────────
 
 f_ip = ctk.CTkFrame(content, fg_color="transparent")
 title(f_ip, "IP / Domain Lookup", "Geolocation, ISP, ASN and threat intelligence")
@@ -615,7 +614,7 @@ def do_ip():
 
 btn_ip.configure(command=lambda: threading.Thread(target=do_ip, daemon=True).start())
 
-# ── Email Header Analyser ──────────────────────────────────
+# tool
 f_email = ctk.CTkFrame(content, fg_color="transparent")
 title(f_email, "Email Header Analyser", "Extract IPs, sender info and routing from raw headers")
 ctk.CTkLabel(f_email, text="Paste raw email headers below:", anchor="w",
@@ -649,7 +648,7 @@ def do_email():
     write(out_email, f"  DKIM  :  {dkim[0] if dkim else 'not found'}", "green" if dkim and "pass" in dkim[0].lower() else "yellow")
     write(out_email, f"  DMARC :  {dmarc[0] if dmarc else 'not found'}","green" if dmarc and "pass" in dmarc[0].lower() else "yellow")
 
-# ── WHOIS ─────────────────────────────────────────────────
+# tool
 f_whois = ctk.CTkFrame(content, fg_color="transparent")
 title(f_whois, "WHOIS Lookup", "Domain registration and ownership info")
 c = card(f_whois); c.pack(fill="x", pady=(0, 12))
@@ -708,7 +707,7 @@ def do_whois():
 
 btn_w.configure(command=lambda: threading.Thread(target=do_whois, daemon=True).start())
 
-# ── Reverse DNS ────────────────────────────────────────────
+# tool
 f_rdns = ctk.CTkFrame(content, fg_color="transparent")
 title(f_rdns, "Reverse DNS", "Resolve an IP address back to its hostname")
 c = card(f_rdns); c.pack(fill="x", pady=(0, 12))
@@ -733,7 +732,7 @@ def do_rdns():
 
 btn_rdns.configure(command=lambda: threading.Thread(target=do_rdns, daemon=True).start())
 
-# ── SSL Checker ────────────────────────────────────────────
+# tool
 f_ssl = ctk.CTkFrame(content, fg_color="transparent")
 title(f_ssl, "SSL/TLS Certificate Checker", "Inspect SSL certificates, expiry, and chain info")
 c = card(f_ssl); c.pack(fill="x", pady=(0, 12))
@@ -797,7 +796,7 @@ def do_ssl():
 
 btn_ssl.configure(command=lambda: threading.Thread(target=do_ssl, daemon=True).start())
 
-# ── Subnet Calculator ──────────────────────────────────────
+# tool
 f_subnet = ctk.CTkFrame(content, fg_color="transparent")
 title(f_subnet, "Subnet Calculator", "Calculate network address, broadcast, host range and more")
 c = card(f_subnet); c.pack(fill="x", pady=(0, 12))
@@ -839,7 +838,7 @@ def do_subnet():
 
 btn_subnet.configure(command=lambda: threading.Thread(target=do_subnet, daemon=True).start())
 
-# ── DNS Records ────────────────────────────────────────────
+# tool
 f_dnsrec = ctk.CTkFrame(content, fg_color="transparent")
 title(f_dnsrec, "DNS Records", "Query A, MX, TXT, NS and CNAME records")
 c = card(f_dnsrec); c.pack(fill="x", pady=(0, 12))
@@ -882,9 +881,9 @@ def do_dnsrec():
 
 btn_dnsrec.configure(command=lambda: threading.Thread(target=do_dnsrec, daemon=True).start())
 
-# ════════════════════════════════════════════════════════════
-#  PORT SCANNER
-# ════════════════════════════════════════════════════════════
+# ────────────
+#  SECTION B
+# ────────────
 f_ps = ctk.CTkFrame(content, fg_color="transparent")
 title(f_ps, "Port Scanner", "Scan any host for open TCP ports")
 ps_card = card(f_ps); ps_card.pack(fill="x")
@@ -981,7 +980,7 @@ ps_scan_btn.configure(command=lambda: [
 ps_stop_btn.configure(command=lambda: globals().update(stop_flag=True))
 ps_copy_btn.configure(command=lambda: [app.clipboard_clear(), app.clipboard_append(out_ps.get("1.0", "end"))])
 
-# ── Banner Grabber ─────────────────────────────────────────
+# tool
 f_banner = ctk.CTkFrame(content, fg_color="transparent")
 title(f_banner, "Banner Grabber", "Grab service banners from open ports")
 c = card(f_banner); c.pack(fill="x", pady=(0,12))
@@ -1016,9 +1015,9 @@ def do_banner():
     except Exception as e:
         write(out_banner, f"  Error: {e}", "red")
 
-# ════════════════════════════════════════════════════════════
-#  NETWORK
-# ════════════════════════════════════════════════════════════
+# ────────────
+#  SECTION C
+# ────────────
 def make_net_tool(ttl, sub, ph, btn_lbl, func):
     f = ctk.CTkFrame(content, fg_color="transparent")
     title(f, ttl, sub)
@@ -1172,9 +1171,9 @@ def do_speed():
     except Exception as e:
         write(out_speed, f"  Error: {e}", "red")
 
-# ════════════════════════════════════════════════════════════
-#  DISCORD
-# ════════════════════════════════════════════════════════════
+# ────────────
+#  SECTION D
+# ────────────
 
 def api_discord(path, token, method="GET", body=None):
     import urllib.error
@@ -1203,7 +1202,7 @@ def api_discord(path, token, method="GET", body=None):
     except urllib.error.URLError as e:
         raise Exception(f"Network error: {e.reason}")
 
-# ── Send Message ───────────────────────────────────────────
+# tool
 f_disc_send = ctk.CTkFrame(content, fg_color="transparent")
 title(f_disc_send, "Send Message", "Send a message to a Discord channel via bot token")
 c = card(f_disc_send); c.pack(fill="x", pady=(0, 12))
@@ -1235,7 +1234,7 @@ def do_disc_send():
         write(out_ds, "  - Wrong channel ID? Right-click channel → Copy Channel ID", "dim")
         write(out_ds, "  - Missing permissions? Give bot Send Messages + View Channel", "dim")
 
-# ── Embed Sender ───────────────────────────────────────────
+# tool
 f_disc_embed = ctk.CTkFrame(content, fg_color="transparent")
 title(f_disc_embed, "Embed Sender", "Send a rich embed message to a Discord channel")
 c = card(f_disc_embed); c.pack(fill="x", pady=(0, 12))
@@ -1273,7 +1272,7 @@ def do_embed():
     except Exception as e:
         write(out_embed, f"  Failed: {e}", "red")
 
-# ── Webhook Sender ─────────────────────────────────────────
+# tool
 f_disc_webhook = ctk.CTkFrame(content, fg_color="transparent")
 title(f_disc_webhook, "Webhook Sender", "Send a message via a Discord webhook URL")
 c = card(f_disc_webhook); c.pack(fill="x", pady=(0, 12))
@@ -1311,7 +1310,7 @@ def do_webhook():
     except Exception as e:
         write(out_wh, f"  Failed: {e}", "red")
 
-# ── DM Sender ──────────────────────────────────────────────
+# tool
 f_disc_dm = ctk.CTkFrame(content, fg_color="transparent")
 title(f_disc_dm, "DM Sender", "Send a direct message to a user via bot token")
 c = card(f_disc_dm); c.pack(fill="x", pady=(0, 12))
@@ -1343,7 +1342,7 @@ def do_dm():
         write(out_dm, f"  Failed: {e}", "red")
         write(out_dm, "\n  Note: Bot must share a server with the user to DM them.", "yellow")
 
-# ── Bot Info ───────────────────────────────────────────────
+# tool
 f_disc_info = ctk.CTkFrame(content, fg_color="transparent")
 title(f_disc_info, "Bot Info", "Fetch information about your bot and its servers")
 c = card(f_disc_info); c.pack(fill="x", pady=(0, 12))
@@ -1372,7 +1371,7 @@ def do_bot_info():
         write(out_bi, f"  Failed: {e}", "red")
         write(out_bi, "\n  HTTP 401 means the token is invalid or expired.", "yellow")
 
-# ── Channel Info ───────────────────────────────────────────
+# tool
 f_disc_channel = ctk.CTkFrame(content, fg_color="transparent")
 title(f_disc_channel, "Channel Info", "Fetch details about a Discord channel")
 c = card(f_disc_channel); c.pack(fill="x", pady=(0, 12))
@@ -1408,7 +1407,7 @@ def do_channel_info():
     except Exception as e:
         write(out_ci, f"  Failed: {e}", "red")
 
-# ── Delete Message ─────────────────────────────────────────
+# tool
 f_disc_delete = ctk.CTkFrame(content, fg_color="transparent")
 title(f_disc_delete, "Delete Message", "Delete a specific message by ID")
 c = card(f_disc_delete); c.pack(fill="x", pady=(0, 12))
@@ -1441,7 +1440,7 @@ def do_delete():
     except Exception as e:
         write(out_del, f"  Failed: {e}", "red")
 
-# ── Server Info ────────────────────────────────────────────
+# tool
 f_disc_server = ctk.CTkFrame(content, fg_color="transparent")
 title(f_disc_server, "Server Info", "Fetch details about a Discord guild/server")
 c = card(f_disc_server); c.pack(fill="x", pady=(0, 12))
@@ -1481,7 +1480,7 @@ def do_server_info():
     except Exception as e:
         write(out_sv, f"  Failed: {e}", "red")
 
-# ── Role Lister ────────────────────────────────────────────
+# tool
 f_disc_roles = ctk.CTkFrame(content, fg_color="transparent")
 title(f_disc_roles, "Role Lister", "List all roles in a server")
 c = card(f_disc_roles); c.pack(fill="x", pady=(0, 12))
@@ -1514,7 +1513,7 @@ def do_role_list():
     except Exception as e:
         write(out_rl, f"  Failed: {e}", "red")
 
-# ── Message Fetcher ────────────────────────────────────────
+# tool
 f_disc_fetch = ctk.CTkFrame(content, fg_color="transparent")
 title(f_disc_fetch, "Message Fetcher", "Fetch recent messages from a channel")
 c = card(f_disc_fetch); c.pack(fill="x", pady=(0, 12))
@@ -1549,7 +1548,7 @@ def do_fetch_msgs():
     except Exception as e:
         write(out_mf, f"  Failed: {e}", "red")
 
-# ── User Lookup ────────────────────────────────────────────
+# tool
 f_disc_user = ctk.CTkFrame(content, fg_color="transparent")
 title(f_disc_user, "User Lookup", "Look up a Discord user by ID")
 c = card(f_disc_user); c.pack(fill="x", pady=(0, 12))
@@ -1584,7 +1583,7 @@ def do_user_lookup():
     except Exception as e:
         write(out_ul, f"  Failed: {e}", "red")
 
-# ── Bulk Delete ────────────────────────────────────────────
+# tool
 f_disc_bulkdel = ctk.CTkFrame(content, fg_color="transparent")
 title(f_disc_bulkdel, "Bulk Delete", "Bulk-delete recent messages from a channel")
 c = card(f_disc_bulkdel); c.pack(fill="x", pady=(0, 12))
@@ -1626,7 +1625,7 @@ def do_bulk_delete():
     except Exception as e:
         write(out_bd, f"  Failed: {e}", "red")
 
-# ── Bot Builder ────────────────────────────────────────────
+# tool
 f_disc_builder = ctk.CTkFrame(content, fg_color="transparent")
 title(f_disc_builder, "Bot Builder", "Generate a starter Discord bot script")
 c = card(f_disc_builder); c.pack(fill="x", pady=(0, 12))
@@ -1685,9 +1684,9 @@ bot.run("YOUR_TOKEN_HERE")
     clear(out_builder)
     write(out_builder, code)
 
-# ════════════════════════════════════════════════════════════
-#  PASSWORDS
-# ════════════════════════════════════════════════════════════
+# ────────────
+#  SECTION E
+# ────────────
 f_passgen = ctk.CTkFrame(content, fg_color="transparent")
 title(f_passgen, "Password Generator", "Generate strong cryptographically random passwords")
 c_pg2 = card(f_passgen); c_pg2.pack(fill="x", pady=(0,12))
@@ -1805,9 +1804,9 @@ def do_passphrase():
         words = [random.choice(WORD_LIST) for _ in range(nw)]
         write(out_pp, f"  {sep.join(words)}", "green")
 
-# ════════════════════════════════════════════════════════════
-#  ENCODING
-# ════════════════════════════════════════════════════════════
+# ────────────
+#  SECTION F
+# ────────────
 f_b64 = ctk.CTkFrame(content, fg_color="transparent")
 title(f_b64, "Base64", "Encode or decode Base64 strings")
 ctk.CTkLabel(f_b64, text="Input:", anchor="w",
@@ -2016,9 +2015,9 @@ def do_ba(to_bin):
     except Exception as e:
         write(out_ba, f"  Error: {e}", "red")
 
-# ════════════════════════════════════════════════════════════
-#  SYSTEM INFO
-# ════════════════════════════════════════════════════════════
+# ────────────
+#  SECTION G
+# ────────────
 f_sysinfo = ctk.CTkFrame(content, fg_color="transparent")
 title(f_sysinfo, "System Info", "OS, hardware, and network overview")
 mk_btn(f_sysinfo, "  Collect Info", width=150,
@@ -2134,9 +2133,9 @@ def do_envvars():
     for k, v in items:
         write(out_ev, f"  {k:<30} =  {v[:80]}", "green" if k.upper() in ("PATH","HOME","USERNAME","USER","APPDATA","TEMP") else "")
 
-# ════════════════════════════════════════════════════════════
-#  WEB TOOLS
-# ════════════════════════════════════════════════════════════
+# ────────────
+#  SECTION H
+# ────────────
 f_http = ctk.CTkFrame(content, fg_color="transparent")
 title(f_http, "HTTP Headers", "Inspect the response headers of any URL")
 c_h = card(f_http); c_h.pack(fill="x", pady=(0,12))
@@ -2249,9 +2248,9 @@ def do_robots():
     except Exception as e:
         write(out_robots, f"  Error: {e}", "red")
 
-# ════════════════════════════════════════════════════════════
-#  FILE TOOLS
-# ════════════════════════════════════════════════════════════
+# ────────────
+#  SECTION I
+# ────────────
 f_filehash = ctk.CTkFrame(content, fg_color="transparent")
 title(f_filehash, "File Hash", "Compute MD5 / SHA hashes of any file")
 fh_path = make_drag_drop_entry(f_filehash, "File path", "C:\\path\\to\\file.exe  or  /path/to/file")
@@ -2385,9 +2384,9 @@ def do_filemetadata():
     except Exception as e:
         write(out_fmeta, f"  Error: {e}", "red")
 
-# ════════════════════════════════════════════════════════════
-#  CRYPTO
-# ════════════════════════════════════════════════════════════
+# ────────────
+#  SECTION J
+# ────────────
 f_crypto = ctk.CTkFrame(content, fg_color="transparent")
 title(f_crypto, "Crypto Prices", "Live cryptocurrency prices via CoinGecko")
 crypto_top_row  = ctk.CTkFrame(f_crypto, fg_color="transparent")
@@ -2476,9 +2475,9 @@ def do_convert():
             write(out_conv, f"  Currency not found: {to}", "red")
     except Exception as e: write(out_conv, f"  Error: {e}", "red")
 
-# ════════════════════════════════════════════════════════════
-#  TEXT TOOLS
-# ════════════════════════════════════════════════════════════
+# ────────────
+#  SECTION K
+# ────────────
 f_texttools = ctk.CTkFrame(content, fg_color="transparent")
 title(f_texttools, "Text Tools", "Transform, analyse, and manipulate text")
 ctk.CTkLabel(f_texttools, text="Input:", anchor="w",
@@ -2531,9 +2530,9 @@ def do_camel_snake():
     clear(out_text)
     write(out_text, result, "green")
 
-# ════════════════════════════════════════════════════════════
-#  QR CODE
-# ════════════════════════════════════════════════════════════
+# ────────────
+#  SECTION L
+# ────────────
 f_qr = ctk.CTkFrame(content, fg_color="transparent")
 title(f_qr, "QR Code Generator", "Generate a QR code for any text or URL")
 qr_in = lentry(f_qr, "Text or URL", "https://example.com")
@@ -2577,9 +2576,9 @@ mk_btn(r_qr, "  Generate QR", width=150, command=lambda: do_qr()).pack(side="lef
 mk_btn(r_qr, "Copy URL", width=100, muted=True, command=lambda: do_qr()).pack(side="left", padx=(8,0))
 out_qr = outbox(f_qr, height=100)
 
-# ════════════════════════════════════════════════════════════
-#  SOCIAL MEDIA
-# ════════════════════════════════════════════════════════════
+# ────────────
+#  SECTION M
+# ────────────
 f_social_ip = ctk.CTkFrame(content, fg_color="transparent")
 title(f_social_ip, "Platform IP Lookup", "Resolve the IP of a social media platform")
 c_soc = card(f_social_ip); c_soc.pack(fill="x", pady=(0,12))
@@ -2688,9 +2687,9 @@ def do_emailval():
         write(out_emailval, "  Format    :  INVALID", "red")
         write(out_emailval, "  Check for correct format: user@domain.com", "yellow")
 
-# ════════════════════════════════════════════════════════════
-#  DEV TOOLS
-# ════════════════════════════════════════════════════════════
+# ────────────
+#  SECTION N
+# ────────────
 f_json_fmt = ctk.CTkFrame(content, fg_color="transparent")
 title(f_json_fmt, "JSON Formatter", "Beautify or minify JSON data")
 ctk.CTkLabel(f_json_fmt, text="Input JSON:", anchor="w",
@@ -2915,9 +2914,9 @@ def do_httpreq():
     except Exception as e:
         write(out_httpreq, f"  Error: {e}", "red")
 
-# ════════════════════════════════════════════════════════════
-#  GENERATORS
-# ════════════════════════════════════════════════════════════
+# ────────────
+#  SECTION O
+# ────────────
 f_uuid = ctk.CTkFrame(content, fg_color="transparent")
 title(f_uuid, "UUID Generator", "Generate UUIDs v1, v4, and bulk batches")
 uuid_count = lentry(f_uuid, "How many to generate", "10")
@@ -3023,9 +3022,9 @@ def do_color_pick():
         color_hex.insert(0, hex_val)
         do_color_convert()
 
-# ════════════════════════════════════════════════════════════
-#  CONVERTERS
-# ════════════════════════════════════════════════════════════
+# ────────────
+#  SECTION P
+# ────────────
 f_units = ctk.CTkFrame(content, fg_color="transparent")
 title(f_units, "Unit Converter", "Convert length, weight, temperature, and data size")
 unit_val = lentry(f_units, "Value", "100")
@@ -3104,9 +3103,9 @@ def do_roman():
     except Exception as e:
         write(out_num, f"  Error: {e}", "red")
 
-# ════════════════════════════════════════════════════════════
-#  NOTES
-# ════════════════════════════════════════════════════════════
+# ────────────
+#  SECTION Q
+# ────────────
 f_notes = ctk.CTkFrame(content, fg_color="transparent")
 title(f_notes, "Notes", "Scratch pad — auto-saves every 30 seconds")
 notes_box = ctk.CTkTextbox(f_notes, fg_color=C["card"], border_width=1, border_color=C["border"],
@@ -3127,9 +3126,9 @@ mk_btn(r_notes, "  Save Notes", width=130,
 mk_btn(r_notes, "Clear", width=80, muted=True,
        command=lambda: notes_box.delete("1.0","end")).pack(side="left", padx=(8,0))
 
-# ════════════════════════════════════════════════════════════
-#  SETTINGS
-# ════════════════════════════════════════════════════════════
+# ────────────
+#  SECTION R
+# ────────────
 f_settings = ctk.CTkFrame(content, fg_color="transparent")
 title(f_settings, "Settings", "Customise appearance and preferences")
 
@@ -3243,9 +3242,9 @@ ctk.CTkLabel(inner_roadmap,
              anchor="w", justify="left",
              font=ctk.CTkFont(family=FONT_UI, size=11),
              text_color=C["text_dim"]).pack(anchor="w", fill="x")
-# ════════════════════════════════════════════════════════════
-#  SIDEBAR MENUS
-# ════════════════════════════════════════════════════════════
+# ────────────
+#  SECTION S
+# ────────────
 make_section("OSINT",
     ["IP Lookup","Email Headers","WHOIS","Reverse DNS","SSL Checker","Subnet Calc","DNS Records"],
     [f_ip, f_email, f_whois, f_rdns, f_ssl, f_subnet, f_dnsrec])

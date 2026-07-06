@@ -272,3 +272,10 @@ All other imports (`socket`, `threading`, `urllib`, `subprocess`, `ssl`, `hashli
 ```
 https://discord.gg/9g3VtekQ5y
 ```
+*Any questions or concerns dm:*
+```
+fzb3 on discord
+```
+or
+```
+du.ckz on discord

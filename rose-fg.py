@@ -122,7 +122,7 @@ def show_loading_screen():
         fill=C["green"], anchor="center")
 
     canvas.create_text(W//2, 134,
-        text="v7.0",
+        text="v8.0",
         font=("Inter", 12),
         fill=C["text_muted"], anchor="center")
 
@@ -286,7 +286,7 @@ SERVICES = {
 }
 
 app = ctk.CTk()
-app.title("rose-fg  v7.0")
+app.title("rose-fg  v8.0")
 app.geometry("1080x720")
 app.resizable(True, True)
 app.configure(fg_color=C["bg"])
@@ -335,7 +335,7 @@ logo_text.pack(side="left")
 ctk.CTkLabel(logo_text, text="rose-fg",
              font=ctk.CTkFont(family=FONT_HEADER, size=16, weight="bold"),
              text_color=C["green"]).pack(anchor="w")
-ctk.CTkLabel(logo_text, text="v7.0",
+ctk.CTkLabel(logo_text, text="v8.0",
              font=ctk.CTkFont(family=FONT_HEADER, size=10),
              text_color=C["text_dim"]).pack(anchor="w")
 
@@ -1244,7 +1244,7 @@ dc2      = lentry(inner_de, "Channel ID", "e.g. 1234567890123456789")
 de_title = lentry(inner_de, "Embed Title", "My Embed Title")
 de_desc  = lentry(inner_de, "Description", "Embed description text")
 de_color = lentry(inner_de, "Colour (hex)", "5865f2")
-de_footer= lentry(inner_de, "Footer text (optional)", "rose-fg v7.0")
+de_footer= lentry(inner_de, "Footer text (optional)", "rose-fg v8.0")
 mk_btn(f_disc_embed, "  Send Embed", width=140,
        command=lambda: threading.Thread(target=do_embed, daemon=True).start()).pack(anchor="w")
 out_embed = outbox(f_disc_embed, height=140)
@@ -2687,6 +2687,121 @@ def do_emailval():
         write(out_emailval, "  Format    :  INVALID", "red")
         write(out_emailval, "  Check for correct format: user@domain.com", "yellow")
 
+f_phonelookup = ctk.CTkFrame(content, fg_color="transparent")
+title(f_phonelookup, "Phone Number Lookup", "Validate a number and get carrier, region, and line type")
+c_ph = card(f_phonelookup); c_ph.pack(fill="x", pady=(0,12))
+r_ph = ctk.CTkFrame(c_ph, fg_color="transparent"); r_ph.pack(fill="x", padx=14, pady=14)
+e_phone = ctk.CTkEntry(r_ph, placeholder_text="e.g.  +14155552671  or  +447911123456",
+                        fg_color=C["card2"], border_color=C["border"], text_color=C["text"],
+                        placeholder_text_color=C["text_muted"],
+                        font=ctk.CTkFont(family=FONT_MONO, size=11), corner_radius=6, border_width=1)
+e_phone.pack(side="left", expand=True, fill="x")
+btn_phone = mk_btn(r_ph, "  Lookup", width=110)
+btn_phone.pack(side="left", padx=(10, 0))
+out_phone = outbox(f_phonelookup)
+
+def do_phonelookup():
+    raw = e_phone.get().strip()
+    clear(out_phone)
+
+    if not raw:
+        write(out_phone, "  Enter a phone number in international format (e.g. +14155552671).", "yellow")
+        return
+
+    try:
+        import phonenumbers as pn
+    except ImportError:
+        write(out_phone, "  phonenumbers not installed. Installing now...", "yellow")
+        try:
+            subprocess.run([sys.executable, "-m", "pip", "install", "phonenumbers", "--quiet"], timeout=30, check=True)
+            import phonenumbers as pn
+        except Exception as e:
+            write(out_phone, f"  Install failed: {e}", "red")
+            return
+
+    try:
+        num = pn.parse(raw, None)
+    except Exception as e:
+        write(out_phone, f"  Could not parse number: {e}", "red")
+        write(out_phone, "  Include the + and country code, e.g. +14155552671", "dim")
+        return
+
+    try:
+        valid       = pn.is_valid_number(num)
+        possible    = pn.is_possible_number(num)
+        region_code = pn.region_code_for_number(num)
+
+        try:
+            from phonenumbers import geocoder as pn_geocoder
+            country_name = pn_geocoder.country_name_for_number(num, "en")
+            region       = pn_geocoder.description_for_number(num, "en")
+        except Exception:
+            country_name, region = None, None
+
+        try:
+            from phonenumbers import carrier as pn_carrier
+            carr = pn_carrier.name_for_number(num, "en")
+        except Exception:
+            carr = None
+
+        try:
+            from phonenumbers import timezone as pn_tz
+            tzs = pn_tz.time_zones_for_number(num)
+        except Exception:
+            tzs = None
+
+        NUM_TYPES = {
+            pn.PhoneNumberType.FIXED_LINE: "Fixed line",
+            pn.PhoneNumberType.MOBILE: "Mobile",
+            pn.PhoneNumberType.FIXED_LINE_OR_MOBILE: "Fixed line or mobile",
+            pn.PhoneNumberType.TOLL_FREE: "Toll-free",
+            pn.PhoneNumberType.PREMIUM_RATE: "Premium rate",
+            pn.PhoneNumberType.SHARED_COST: "Shared cost",
+            pn.PhoneNumberType.VOIP: "VoIP",
+            pn.PhoneNumberType.PERSONAL_NUMBER: "Personal number",
+            pn.PhoneNumberType.PAGER: "Pager",
+            pn.PhoneNumberType.UAN: "UAN",
+            pn.PhoneNumberType.VOICEMAIL: "Voicemail",
+            pn.PhoneNumberType.UNKNOWN: "Unknown",
+        }
+        ntype = pn.number_type(num)
+
+        e164_fmt = pn.format_number(num, pn.PhoneNumberFormat.E164)
+        intl_fmt = pn.format_number(num, pn.PhoneNumberFormat.INTERNATIONAL)
+        natl_fmt = pn.format_number(num, pn.PhoneNumberFormat.NATIONAL)
+        rfc_fmt  = pn.format_number(num, pn.PhoneNumberFormat.RFC3966)
+
+        # ── Output, single clean pass ──────────────
+        write(out_phone, f"  Number                :  {intl_fmt}", "cyan")
+        write(out_phone, f"  Valid / Possible      :  {'Yes' if valid else 'No'} / {'Yes' if possible else 'No'}",
+              "green" if valid else "red")
+        write(out_phone, f"  Country               :  {country_name or 'Unknown'}  (+{num.country_code}, {region_code or '??'})", "green")
+        write(out_phone, f"  Region / City         :  {region or 'Non-geographic / mobile'}")
+        write(out_phone, f"  Carrier               :  {carr or 'Unknown / ported'}", "yellow")
+        write(out_phone, f"  Line Type             :  {NUM_TYPES.get(ntype, 'Unknown')}")
+        write(out_phone, f"  Timezone(s)           :  {', '.join(tzs) if tzs else 'Unknown'}", "blue")
+
+        write(out_phone, "\n  FORMATS", "dim")
+        write(out_phone, f"  E.164                 :  {e164_fmt}", "green")
+        write(out_phone, f"  International         :  {intl_fmt}")
+        write(out_phone, f"  National              :  {natl_fmt}")
+        write(out_phone, f"  Tel URI               :  {rfc_fmt}", "dim")
+
+        write(out_phone, "\n  DIALLING FROM ABROAD", "dim")
+        for from_region, label in [("US", "US"), ("GB", "UK"), ("AU", "Australia")]:
+            try:
+                out_fmt = pn.format_out_of_country_calling_number(num, from_region)
+                write(out_phone, f"  {label:<10}          :  {out_fmt}")
+            except Exception:
+                pass
+
+    except Exception as e:
+        write(out_phone, f"  Error: {e}", "red")
+
+def _phone_lookup_thread():
+    threading.Thread(target=do_phonelookup, daemon=True).start()
+
+btn_phone.configure(command=_phone_lookup_thread)
 # ────────────
 #  SECTION N
 # ────────────
@@ -3300,8 +3415,8 @@ make_section("QR Code",
     [f_qr])
 
 make_section("Social Media",
-    ["Platform IP Lookup","Username Checker","Email Validator"],
-    [f_social_ip, f_username, f_emailval])
+    ["Platform IP Lookup","Username Checker","Email Validator","Phone Lookup"],
+    [f_social_ip, f_username, f_emailval, f_phonelookup])
 
 make_section("Dev Tools",
     ["JSON Formatter","Regex Tester","Diff Checker","Timestamp Converter","HTTP Request Builder"],

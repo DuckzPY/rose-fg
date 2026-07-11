@@ -169,6 +169,8 @@ rose-fg uses **JetBrains Mono** and **Inter**. If these aren't installed on your
 |------|-------------|
 | Platform IP Lookup | Resolve a social media domain to IPs with geolocation |
 | Username Checker | Search GitHub, Twitter/X, Instagram, TikTok, Reddit |
+| Email Validator | Checks if the email is alive and gives info about it |
+| Phone Lookup | Look at the data of a phone number |
 
 ### Dev Tools
 | Tool | Description |
@@ -177,6 +179,7 @@ rose-fg uses **JetBrains Mono** and **Inter**. If these aren't installed on your
 | Regex Tester | Find all matches with group capture and position info |
 | Diff Checker | Unified diff between two text inputs |
 | Timestamp Converter | Unix ↔ human date, multiple formats, current time |
+| HTTP Request Builder | Send custom GET/POST/PUT/DELETE/PATCH/HEAD requests |
 
 ### Generators
 | Tool | Description |

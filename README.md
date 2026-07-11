@@ -81,11 +81,13 @@ rose-fg uses **JetBrains Mono** and **Inter**. If these aren't installed on your
 | Reverse DNS | Resolves an IP back to its hostname |
 | SSL/TLS Certificate Checker | Expiry, issuer, protocol, SANs, days remaining |
 | Subnet Calculator | Network address, broadcast, mask, host range, CIDR |
+| DNS Records | Query A, MX, TXT, NS and CNAME records |
 
 ### Port Scanner
 | Tool | Description |
 |------|-------------|
 | Port Scanner | Threaded TCP scanner with speed slider, presets, live progress, stop button |
+| Banner Grabber | Grab service banners from open ports |
 
 ### Network
 | Tool | Description |
@@ -95,6 +97,8 @@ rose-fg uses **JetBrains Mono** and **Inter**. If these aren't installed on your
 | DNS Lookup | Resolves domain to IPs with reverse lookup |
 | My Public IP | External IP + city, region, country, ISP via ipify + ip-api |
 | Netstat | Lists all active network connections |
+| ARP Scanner | Discover devices on your LAN |
+| Speed Test | Measure download speed from public endpoint | (Broken)
 
 ### Discord
 | Tool | Description |
@@ -109,12 +113,15 @@ rose-fg uses **JetBrains Mono** and **Inter**. If these aren't installed on your
 | Server Info | Member count, boost level, verification, features, locale |
 | Role Lister | All roles sorted by position with colour, ID, bot-managed flag |
 | Message Fetcher | Fetch up to 100 recent messages from any channel |
+| User Lookup | Look up discord user by ID |
+| Bulk Delete | Bulk delete recent messages from a channel |
 | Bot Builder | Generates a ready-to-run discord.py bot script |
 
 ### Passwords
 | Tool | Description |
 |------|-------------|
 | Password Generator | Cryptographically random, configurable length/charset, generates ×5 |
+| Passphrase | Generate multi-word passphrases |
 | Hash Generator | MD5, SHA1, SHA256, SHA512 |
 | Strength Checker | Scores 0–6 with a visual bar and improvement tips |
 
@@ -127,6 +134,7 @@ rose-fg uses **JetBrains Mono** and **Inter**. If these aren't installed on your
 | Caesar / ROT13 | Shift cipher with configurable amount + ROT13 shortcut |
 | JWT Decoder | Decode header and payload, highlight expiry, no verification required |
 | Morse Code | Text ↔ Morse with standard ITU table |
+| Binary -> Text | Convert text to binary and back |
 
 ### System Info
 | Tool | Description |
@@ -134,6 +142,7 @@ rose-fg uses **JetBrains Mono** and **Inter**. If these aren't installed on your
 | System Info | OS, architecture, hostname, local IP, Python runtime, env vars, psutil hardware stats |
 | Processes | Full process list via tasklist (Windows) or ps aux (Unix) |
 | Disk Info | Per-drive usage with colour-coded percentage warnings |
+| Env Variables | View system environment variables |
 
 ### Web Tools
 | Tool | Description |
@@ -141,12 +150,15 @@ rose-fg uses **JetBrains Mono** and **Inter**. If these aren't installed on your
 | HTTP Headers | Full response header dump for any URL |
 | Site Status | Online/offline check with final URL and status code |
 | Bulk IP Lookup | Geolocate a list of IPs, one per line |
+| Robots.txt | Fetch and display a site's robots.txt file |
 
 ### File Tools
 | Tool | Description |
 |------|-------------|
 | File Hash | MD5, SHA1, SHA256 for any file — supports drag & drop |
 | File Info | Name, size, extension, permissions, created/modified/accessed timestamps |
+| File Metadata | View file metadata and attributes |
+| File Comparator | Compare two files byte-by-byte |
 
 ### Crypto
 | Tool | Description |

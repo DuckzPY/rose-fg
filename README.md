@@ -7,7 +7,7 @@
 
 rose-fg is a personal desktop application that consolidates a wide range of security, networking, encoding, and developer tools into a single dark-themed GUI. It is designed to be run locally with no telemetry, no accounts, and no cloud dependency. Everything runs on your machine.
 
-It is not intended for distribution. This is a private tool.
+This tool is not intended for re-distribution.
 
 ---
 

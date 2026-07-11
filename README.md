@@ -190,7 +190,6 @@ rose-fg uses **JetBrains Mono** and **Inter**. If these aren't installed on your
 | JSON Formatter | Beautify or minify JSON with validation |
 | Regex Tester | Find all matches with group capture and position info |
 | Diff Checker | Unified diff between two text inputs |
-| Timestamp Converter | Unix ↔ human date, multiple formats, current time |
 | HTTP Request Builder | Send custom GET/POST/PUT/DELETE/PATCH/HEAD requests |
 
 ### Generators
@@ -204,6 +203,7 @@ rose-fg uses **JetBrains Mono** and **Inter**. If these aren't installed on your
 |------|-------------|
 | Unit Converter | Length, weight, temperature, data size, speed |
 | Number Converter | Decimal → binary, hex, octal |
+| Timestamp Converter | Unix ↔ human date, multiple formats, current time |
 | Colour Converter | HEX ↔ RGB ↔ HSL with live preview swatch and colour picker |
 
 ### Notes

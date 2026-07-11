@@ -3426,16 +3426,16 @@ make_section("Social Media",
     [f_social_ip, f_username, f_emailval, f_phonelookup])
 
 make_section("Dev Tools",
-    ["JSON Formatter","Regex Tester","Diff Checker","Timestamp Converter","HTTP Request Builder"],
-    [f_json_fmt, f_regex, f_diff, f_timestamp, f_httpreq])
+    ["JSON Formatter","Regex Tester","Diff Checker", "HTTP Request Builder"],
+    [f_json_fmt, f_regex, f_diff, f_httpreq])
 
 make_section("Generators",
-    ["UUID Generator","Colour Converter","Lorem Ipsum"],
-    [f_uuid, f_color, f_lorem])
+    ["UUID Generator","Lorem Ipsum"],
+    [f_uuid, f_lorem])
 
 make_section("Converters",
-    ["Unit Converter","Number Converter"],
-    [f_units, f_numtools])
+    ["Unit Converter","Number Converter","Colour Converter","Timestamp Converter"],
+    [f_units, f_numtools, f_color, f_timestamp])
 
 _divider(sidebar, C["green_dark"], 4)
 

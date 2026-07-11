@@ -23,8 +23,15 @@ import customtkinter as ctk
 from tkinter import colorchooser, ttk, filedialog
 import tkinter as tk
 
-SETTINGS_FILE = os.path.join(os.path.expanduser("~"), ".rose-fg_settings.json")
-NOTES_FILE    = os.path.join(os.path.expanduser("~"), ".rose-fg_notes.txt")
+# ────────────────
+# Variables
+# ────────────────
+APP_NAME    = "rose-fg"
+APP_VERSION = "8.0"
+DISCORD_UA_VERSION = "8.0"  
+
+SETTINGS_FILE = os.path.join(os.path.expanduser("~"), f".{APP_NAME}_settings.json")
+NOTES_FILE    = os.path.join(os.path.expanduser("~"), f".{APP_NAME}_notes.txt")
 
 def load_settings():
     defaults = {"theme": "dark", "accent": "blue", "opacity": 1.0, "font_size": 12, "default_tab": "OSINT"}
@@ -117,12 +124,12 @@ def show_loading_screen():
 
     # layout
     canvas.create_text(W//2, 86,
-        text="rose-fg",
+        text=APP_NAME,
         font=("Inter", 44, "bold"),
         fill=C["green"], anchor="center")
 
     canvas.create_text(W//2, 134,
-        text="v8.0",
+        text=f"v{APP_VERSION}",
         font=("Inter", 12),
         fill=C["text_muted"], anchor="center")
 
@@ -286,7 +293,7 @@ SERVICES = {
 }
 
 app = ctk.CTk()
-app.title("rose-fg  v8.0")
+app.title(f"{APP_NAME}  v{APP_VERSION}")
 app.geometry("1080x720")
 app.resizable(True, True)
 app.configure(fg_color=C["bg"])
@@ -332,10 +339,10 @@ except Exception:
 
 logo_text = ctk.CTkFrame(logo_frame, fg_color="transparent")
 logo_text.pack(side="left")
-ctk.CTkLabel(logo_text, text="rose-fg",
+ctk.CTkLabel(logo_text, text=APP_NAME,
              font=ctk.CTkFont(family=FONT_HEADER, size=16, weight="bold"),
              text_color=C["green"]).pack(anchor="w")
-ctk.CTkLabel(logo_text, text="v8.0",
+ctk.CTkLabel(logo_text, text=f"v{APP_VERSION}",
              font=ctk.CTkFont(family=FONT_HEADER, size=10),
              text_color=C["text_dim"]).pack(anchor="w")
 
@@ -1180,7 +1187,7 @@ def api_discord(path, token, method="GET", body=None):
     headers = {
         "Content-Type":  "application/json",
         "Authorization": f"Bot {token}",
-        "User-Agent":    "DiscordBot (rose-fg, 7.0)"
+        "User-Agent":    f"DiscordBot ({APP_NAME}, {DISCORD_UA_VERSION})"
     }
     req = urllib.request.Request(
         f"https://discord.com/api/v10{path}",
@@ -1209,7 +1216,7 @@ c = card(f_disc_send); c.pack(fill="x", pady=(0, 12))
 inner_ds = ctk.CTkFrame(c, fg_color="transparent"); inner_ds.pack(fill="x", padx=14, pady=14)
 dt1 = lentry(inner_ds, "Bot Token", "Bot token from Discord Developer Portal", "*")
 dc1 = lentry(inner_ds, "Channel ID", "e.g. 1234567890123456789")
-dm1 = lentry(inner_ds, "Message", "Hello from rose-fg!")
+dm1 = lentry(inner_ds, "Message", f"Hello from {APP_NAME}!")
 mk_btn(f_disc_send, "  Send Message", width=150,
        command=lambda: threading.Thread(target=do_disc_send, daemon=True).start()).pack(anchor="w")
 out_ds = outbox(f_disc_send, height=160)
@@ -1244,7 +1251,7 @@ dc2      = lentry(inner_de, "Channel ID", "e.g. 1234567890123456789")
 de_title = lentry(inner_de, "Embed Title", "My Embed Title")
 de_desc  = lentry(inner_de, "Description", "Embed description text")
 de_color = lentry(inner_de, "Colour (hex)", "5865f2")
-de_footer= lentry(inner_de, "Footer text (optional)", "rose-fg v8.0")
+de_footer= lentry(inner_de, "Footer text (optional)", f"{APP_NAME} v{APP_VERSION}")
 mk_btn(f_disc_embed, "  Send Embed", width=140,
        command=lambda: threading.Thread(target=do_embed, daemon=True).start()).pack(anchor="w")
 out_embed = outbox(f_disc_embed, height=140)
@@ -1278,7 +1285,7 @@ title(f_disc_webhook, "Webhook Sender", "Send a message via a Discord webhook UR
 c = card(f_disc_webhook); c.pack(fill="x", pady=(0, 12))
 inner_dw = ctk.CTkFrame(c, fg_color="transparent"); inner_dw.pack(fill="x", padx=14, pady=14)
 dw_url  = lentry(inner_dw, "Webhook URL", "https://discord.com/api/webhooks/...")
-dw_name = lentry(inner_dw, "Username override (optional)", "rose-fg")
+dw_name = lentry(inner_dw, "Username override (optional)", APP_NAME)
 dw_msg  = lentry(inner_dw, "Message", "Hello from webhook!")
 mk_btn(f_disc_webhook, "  Send Webhook", width=150,
        command=lambda: threading.Thread(target=do_webhook, daemon=True).start()).pack(anchor="w")
@@ -1431,7 +1438,7 @@ def do_delete():
     try:
         req = urllib.request.Request(
             f"https://discord.com/api/v10/channels/{ch}/messages/{mid}",
-            headers={"Authorization": f"Bot {token}", "User-Agent": "DiscordBot (rose-fg, 7.0)"},
+            headers={"Authorization": f"Bot {token}", "User-Agent": f"DiscordBot ({APP_NAME}, {DISCORD_UA_VERSION})"},
             method="DELETE")
         urllib.request.urlopen(req, timeout=8)
         write(out_del, "  Message deleted successfully.", "green")
@@ -1615,7 +1622,7 @@ def do_bulk_delete():
         req = urllib.request.Request(
             f"https://discord.com/api/v10/channels/{ch}/messages/bulk-delete",
             data=json.dumps({"messages": ids}).encode(),
-            headers={"Content-Type":"application/json","Authorization":f"Bot {token}","User-Agent":"DiscordBot (rose-fg, 7.0)"},
+            headers={"Content-Type":"application/json","Authorization":f"Bot {token}","User-Agent":f"DiscordBot ({APP_NAME}, {DISCORD_UA_VERSION})"},
             method="POST")
         urllib.request.urlopen(req, timeout=10)
         write(out_bd, f"  Deleted {len(ids)} messages successfully.", "green")
@@ -3003,7 +3010,7 @@ def do_httpreq():
     clear(out_httpreq)
     write(out_httpreq, f"  {method} {url}\n", "dim")
     try:
-        headers  = {"User-Agent": "rose-fg/7.0", "Content-Type": "application/json"}
+        headers  = {"User-Agent": f"{APP_NAME}/{DISCORD_UA_VERSION}", "Content-Type": "application/json"}
         hdr_raw  = hreq_headers.get().strip()
         if hdr_raw:
             try: headers.update(json.loads(hdr_raw))
@@ -3353,7 +3360,7 @@ c_roadmap = card(f_settings); c_roadmap.pack(fill="x", pady=(0, 16))
 inner_roadmap = ctk.CTkFrame(c_roadmap, fg_color="transparent")
 inner_roadmap.pack(fill="x", padx=14, pady=14)
 ctk.CTkLabel(inner_roadmap,
-             text="Once rose-fg reaches v15.0, development focus will shift to starting work on rose-ng.",
+             text=f"Once {APP_NAME} reaches v15.0, development focus will shift to starting work on {APP_NAME.replace('-fg', '-ng')}.",
              anchor="w", justify="left",
              font=ctk.CTkFont(family=FONT_UI, size=11),
              text_color=C["text_dim"]).pack(anchor="w", fill="x")
@@ -3419,16 +3426,16 @@ make_section("Social Media",
     [f_social_ip, f_username, f_emailval, f_phonelookup])
 
 make_section("Dev Tools",
-    ["JSON Formatter","Regex Tester","Diff Checker","HTTP Request Builder"],
-    [f_json_fmt, f_regex, f_diff, f_httpreq])
+    ["JSON Formatter","Regex Tester","Diff Checker","Timestamp Converter","HTTP Request Builder"],
+    [f_json_fmt, f_regex, f_diff, f_timestamp, f_httpreq])
 
 make_section("Generators",
-    ["UUID Generator","Lorem Ipsum"],
-    [f_uuid, f_lorem])
+    ["UUID Generator","Colour Converter","Lorem Ipsum"],
+    [f_uuid, f_color, f_lorem])
 
 make_section("Converters",
-    ["Unit Converter","Number Converter", "Timestamp Converter", "Colour Converter"],
-    [f_units, f_numtools, f_timestamp, f_color])
+    ["Unit Converter","Number Converter"],
+    [f_units, f_numtools])
 
 _divider(sidebar, C["green_dark"], 4)
 

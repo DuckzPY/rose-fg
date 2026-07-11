@@ -27,8 +27,8 @@ import tkinter as tk
 # Variables
 # ────────────────
 APP_NAME    = "rose-fg"
-APP_VERSION = "8.0"
-DISCORD_UA_VERSION = "8.0"  
+APP_VERSION = "9.0"
+DISCORD_UA_VERSION = "9.0"  
 
 SETTINGS_FILE = os.path.join(os.path.expanduser("~"), f".{APP_NAME}_settings.json")
 NOTES_FILE    = os.path.join(os.path.expanduser("~"), f".{APP_NAME}_notes.txt")

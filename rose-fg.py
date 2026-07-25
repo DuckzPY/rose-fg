@@ -1,6 +1,6 @@
 import socket
 import threading
-import urllib.request, urllib.parse
+import urllib.request, urllib.parse, urllib.error
 import subprocess
 import json
 import os
@@ -18,7 +18,7 @@ import uuid
 import difflib
 import qrcode
 from io import BytesIO
-from PIL import ExifTags, Image, Image
+from PIL import ExifTags, Image, ImageTk
 import customtkinter as ctk
 from tkinter import colorchooser, ttk, filedialog
 import tkinter as tk
@@ -27,8 +27,8 @@ import tkinter as tk
 # Variables
 # ────────────────
 APP_NAME    = "rose-fg"
-APP_VERSION = "9.0"
-DISCORD_UA_VERSION = "9.0"  
+APP_VERSION = "10.0"
+DISCORD_UA_VERSION = "10.0"  
 
 SETTINGS_FILE = os.path.join(os.path.expanduser("~"), f".{APP_NAME}_settings.json")
 NOTES_FILE    = os.path.join(os.path.expanduser("~"), f".{APP_NAME}_notes.txt")
@@ -84,7 +84,9 @@ FONT_HEADER = "Inter"
 #  STARTUP
 # ───────
 
-DISCORD_LINK = "https://discord.gg/GUuFrS9V5v"
+# Encrypted Discord link to prevent scraping
+_DC = "aHR0cHM6Ly9kaXNjb3JkLmdnL0dVdUZyUzlWNXY="
+DISCORD_LINK = base64.b64decode(_DC).decode()
 
 def show_loading_screen():
     """Startup splash screen."""
@@ -1183,7 +1185,6 @@ def do_speed():
 # ────────────
 
 def api_discord(path, token, method="GET", body=None):
-    import urllib.error
     headers = {
         "Content-Type":  "application/json",
         "Authorization": f"Bot {token}",
@@ -1851,7 +1852,7 @@ mk_btn(r_url, "  Decode", width=110, command=lambda: do_url(False)).pack(side="l
 out_url = outbox(f_url_enc, height=220)
 
 def do_url(enc):
-    import urllib.parse; t = url_in.get().strip(); clear(out_url)
+    t = url_in.get().strip(); clear(out_url)
     try:
         write(out_url, urllib.parse.quote(t) if enc else urllib.parse.unquote(t), "green")
     except Exception as e: write(out_url, f"  Error: {e}", "red")
@@ -2553,7 +2554,6 @@ qr_image_label.pack(pady=12)
 qr_img_ref = [None]
 
 def do_qr():
-    import urllib.parse
     t = qr_in.get().strip()
     if not t: return
     clear(out_qr)
@@ -3249,6 +3249,69 @@ mk_btn(r_notes, "Clear", width=80, muted=True,
        command=lambda: notes_box.delete("1.0","end")).pack(side="left", padx=(8,0))
 
 # ────────────
+#  SECTION R2  (new — Dice / Coin Flip / Random Picker)
+# ────────────
+f_random = ctk.CTkFrame(content, fg_color="transparent")
+title(f_random, "Dice, Coins & Picker", "Roll dice, flip coins, or pick a random item from a list — handy for breaking ties or making quick decisions")
+
+c_rand = card(f_random); c_rand.pack(fill="x", pady=(0, 12))
+inner_rand = ctk.CTkFrame(c_rand, fg_color="transparent"); inner_rand.pack(fill="x", padx=14, pady=14)
+rand_dice_count = lentry(inner_rand, "Number of dice", "2")
+rand_dice_sides = lentry(inner_rand, "Sides per die", "6")
+r_rand1 = irow(f_random)
+mk_btn(r_rand1, "  Roll Dice", width=130, command=lambda: do_roll_dice()).pack(side="left")
+mk_btn(r_rand1, "  Flip Coin", width=130, command=lambda: do_flip_coin()).pack(side="left", padx=(8,0))
+
+ctk.CTkLabel(f_random, text="Pick randomly from a list (one item per line):", anchor="w",
+             font=ctk.CTkFont(family=FONT_UI, size=11), text_color=C["text_dim"]).pack(fill="x", pady=(8,0))
+rand_list_box = ctk.CTkTextbox(f_random, height=90, fg_color=C["card"], border_width=1,
+                                border_color=C["border"], text_color=C["text"],
+                                font=ctk.CTkFont(family=FONT_MONO, size=11), corner_radius=8)
+rand_list_box.pack(fill="x", pady=(2, 8))
+r_rand2 = irow(f_random)
+mk_btn(r_rand2, "  Pick One", width=130, command=lambda: do_pick_one()).pack(side="left")
+mk_btn(r_rand2, "  Shuffle List", width=140, command=lambda: do_shuffle_list()).pack(side="left", padx=(8,0))
+out_rand = outbox(f_random, height=200)
+
+def do_roll_dice():
+    clear(out_rand)
+    try:
+        count = max(1, min(50, int(rand_dice_count.get().strip() or 2)))
+        sides = max(2, min(1000, int(rand_dice_sides.get().strip() or 6)))
+    except:
+        write(out_rand, "  Enter valid numbers for dice count / sides.", "red"); return
+    rolls = [random.randint(1, sides) for _ in range(count)]
+    write(out_rand, f"  Rolling {count} × d{sides}...\n", "dim")
+    write(out_rand, f"  Rolls  :  {', '.join(str(r2) for r2 in rolls)}", "green")
+    write(out_rand, f"  Total  :  {sum(rolls)}", "cyan")
+    write(out_rand, f"  Average:  {sum(rolls)/len(rolls):.2f}", "dim")
+
+def do_flip_coin():
+    clear(out_rand)
+    result = random.choice(["HEADS", "TAILS"])
+    write(out_rand, f"  🪙  {result}", "green" if result == "HEADS" else "yellow")
+
+def do_pick_one():
+    items = [l.strip() for l in rand_list_box.get("1.0", "end").splitlines() if l.strip()]
+    clear(out_rand)
+    if not items:
+        write(out_rand, "  Add at least one item to the list.", "yellow"); return
+    choice = random.choice(items)
+    write(out_rand, f"  Picked from {len(items)} item(s):\n", "dim")
+    write(out_rand, f"  → {choice}", "green")
+
+def do_shuffle_list():
+    items = [l.strip() for l in rand_list_box.get("1.0", "end").splitlines() if l.strip()]
+    clear(out_rand)
+    if not items:
+        write(out_rand, "  Add at least one item to the list.", "yellow"); return
+    shuffled = items[:]
+    random.shuffle(shuffled)
+    write(out_rand, "  Shuffled order:\n", "dim")
+    for i, item in enumerate(shuffled, 1):
+        write(out_rand, f"  {i}.  {item}", "green")
+
+# ────────────
 #  SECTION R
 # ────────────
 f_settings = ctk.CTkFrame(content, fg_color="transparent")
@@ -3360,7 +3423,7 @@ c_roadmap = card(f_settings); c_roadmap.pack(fill="x", pady=(0, 16))
 inner_roadmap = ctk.CTkFrame(c_roadmap, fg_color="transparent")
 inner_roadmap.pack(fill="x", padx=14, pady=14)
 ctk.CTkLabel(inner_roadmap,
-             text=f"Once {APP_NAME} reaches v15.0, development focus will shift to starting work on {APP_NAME.replace('-fg', '-ng')}.",
+             text=f"Development has begun on rose-ng, a new version of {APP_NAME} with a modern UI and improved features.\n\n",
              anchor="w", justify="left",
              font=ctk.CTkFont(family=FONT_UI, size=11),
              text_color=C["text_dim"]).pack(anchor="w", fill="x")
@@ -3436,6 +3499,10 @@ make_section("Generators",
 make_section("Converters",
     ["Unit Converter","Number Converter","Colour Converter","Timestamp Converter"],
     [f_units, f_numtools, f_color, f_timestamp])
+
+make_section("Random",
+    ["Dice, Coins & Picker"],
+    [f_random])
 
 _divider(sidebar, C["green_dark"], 4)
 
